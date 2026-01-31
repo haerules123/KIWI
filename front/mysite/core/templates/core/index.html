@@ -1,0 +1,1314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI - App Categories</title>
+    <!-- 폰트: Pretendard -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <!-- 아이콘: FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- 1. CSS Variables & Theme --- */
+        :root {
+            /* Light Mode */
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.85);
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --text-hero-grad: linear-gradient(to right, #1e293b, #475569);
+            --border-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-color: #0ea5e9;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --hero-bg: radial-gradient(circle at top, #e2e8f0 0%, #f8fafc 70%);
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-nav: rgba(15, 23, 42, 0.85);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --text-hero-grad: linear-gradient(to right, #fff, #94a3b8);
+            --border-color: rgba(255,255,255,0.1);
+            --shadow-card: none;
+            --hero-bg: radial-gradient(circle at top, #1e293b 0%, #0f172a 70%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* 모든 테마 관련 요소에 동일한 transition 적용 */
+        body, nav, .hero, .platforms-section, .features-section, footer,
+        .feature-box, .modal-box, .input-group input {
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* --- 2. Navigation --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; 
+            background-color: var(--bg-nav);
+            backdrop-filter: blur(10px); z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0px; color: var(--text-main); }
+        .brand span { color: var(--primary-color); }
+        .brand-logo { 
+            width: 75px; height: 35px; object-fit: contain; 
+            transition: opacity 0.3s;
+            cursor: grab;
+            user-select: none;
+        }
+        .brand-logo:active { cursor: grabbing; }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        
+        /* 프로필 아바타 */
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background-color: var(--primary-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem;
+        }
+
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color);
+            color: var(--text-main); width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; margin-right: 5px;
+        }
+        .theme-btn:hover { background-color: var(--border-color); }
+
+        .btn { padding: 9px 20px; border-radius: 6px; font-weight: 600; transition: 0.3s; font-size: 0.9rem; }
+        .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-ghost:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .btn-primary { background-color: var(--primary-color); color: white; border: none; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        /* 공통 알림 모달 */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .alert-modal-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.3s ease;
+        }
+
+        .alert-modal-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-modal-body {
+            color: var(--text-sub);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .alert-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .alert-modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .alert-modal-btn.cancel {
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .alert-modal-btn.cancel:hover {
+            background: var(--border-color);
+        }
+
+        .alert-modal-btn.confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .alert-modal-btn.confirm:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .alert-modal-btn.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .alert-modal-btn.error:hover {
+            background: #dc2626;
+        }
+
+        .alert-modal-btn.success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .alert-modal-btn.success:hover {
+            background: #16a34a;
+        }
+
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .toast-message {
+            font-weight: 600;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- 3. Hero Section --- */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 100px 20px 60px;
+            background: var(--hero-bg);
+            position: relative;
+        }
+        
+        .hero-content { max-width: 800px; z-index: 2; animation: fadeIn 0.8s ease-out; }
+        
+        .hero-badge {
+            display: inline-block; background: rgba(59, 130, 246, 0.1); color: var(--accent-color);
+            padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2); font-weight: 600;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem; margin-bottom: 20px; line-height: 1.2;
+            background: var(--text-hero-grad);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p { font-size: 1.2rem; color: var(--text-sub); margin-bottom: 40px; }
+        .hero-cta-group { display: flex; justify-content: center; gap: 15px; }
+
+        /* --- 4. Carousel Section --- */
+        .platforms-section { 
+            padding: 100px 0;
+            background-color: var(--bg-body);
+            text-align: center; 
+            border-top: 1px solid var(--border-color);
+            overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        
+        .section-title { margin-bottom: 50px; padding: 0 20px; }
+        .section-title h2 { font-size: 2.2rem; margin-bottom: 15px; color: var(--text-main); }
+        .section-title p { color: var(--text-sub); }
+
+        .carousel-wrapper {
+            width: 100%; height: 350px;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1000px;
+        }
+
+        .carousel-track {
+            position: relative; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        .app-card {
+            width: 300px; height: 180px;
+            border-radius: 16px;
+            position: absolute;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: 800; color: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 0; transform: scale(0.8); cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .app-card i { font-size: 40px; margin-bottom: 10px; }
+        .app-card span { z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); letter-spacing: 1px; }
+
+        /* 카테고리별 테마 컬러 */
+        .cat-ott       { background: linear-gradient(135deg, #141E30 0%, #243B55 100%); }
+        .cat-sns       { background: linear-gradient(135deg, #405DE6 0%, #833AB4 100%); }
+        .cat-messenger { background: linear-gradient(135deg, #FEE140 0%, #FA709A 100%); }
+        .cat-music     { background: linear-gradient(135deg, #1DB954 0%, #191414 100%); }
+        .cat-camera    { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); }
+        .cat-education { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
+        .cat-shopping  { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); }
+        .cat-map       { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+
+        /* 캐러셀 상태 클래스 */
+        .app-card.active { opacity: 1; transform: translateZ(100px) scale(1.1); z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .app-card.prev { opacity: 0.6; transform: translateX(-350px) scale(0.85) rotateY(25deg); z-index: 5; filter: grayscale(30%); }
+        .app-card.next { opacity: 0.6; transform: translateX(350px) scale(0.85) rotateY(-25deg); z-index: 5; filter: grayscale(30%); }
+        .app-card.hidden { opacity: 0; transform: scale(0); pointer-events: none; }
+
+        /* --- 5. Features Section --- */
+        .features-section { padding: 100px 5%; background-color: var(--bg-body); }
+        .features-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+        
+        .feature-box {
+            flex: 1; min-width: 300px; padding: 40px;
+            background: var(--bg-card);
+            border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+        }
+        .feature-box h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--text-main); }
+        .feature-box p { color: var(--text-sub); }
+        .feature-box i { font-size: 2rem; color: var(--primary-color); margin-bottom: 20px; }
+
+        /* --- 6. Footer --- */
+        footer {
+            padding: 40px; text-align: center; border-top: 1px solid var(--border-color);
+            color: var(--text-sub); background-color: var(--bg-body);
+        }
+
+        /* --- 7. Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        
+        .modal-box {
+            background-color: var(--bg-card); width: 400px; padding: 40px;
+            border-radius: 12px; border: 1px solid var(--border-color);
+            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            color: var(--text-main);
+        }
+        
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-sub); font-size: 0.9rem; }
+        .input-group input {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            background-color: var(--bg-body); border: 1px solid var(--border-color);
+            border-radius: 6px; color: var(--text-main); outline: none;
+        }
+        .auth-btn { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .switch-auth { margin-top: 20px; text-align: center; color: var(--text-sub); font-size: 0.9rem; }
+        .switch-auth span { color: var(--primary-color); cursor: pointer; font-weight: 600; }
+
+        /* --- 8. 반려키위 --- */
+        .pet-kiwi {
+            position: fixed;
+            width: 120px;
+            height: 80px;
+            pointer-events: auto;
+            z-index: 9999;
+            cursor: pointer;
+            transition: none;
+            image-rendering: crisp-edges;
+        }
+        
+        .pet-kiwi.walking {
+            animation: walk 0.2s steps(2) infinite;
+        }
+        
+        @keyframes walk {
+            0%, 100% { transform: scaleY(0.95); }
+            50% { transform: scaleY(1.05); }
+        }
+
+        /* Animation & Responsive */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-right .btn { display: none; } /* 모바일에서 로그인/가입 버튼 숨김 (공간부족) */
+            
+            /* 캐러셀 모바일 조정 */
+            .app-card { width: 220px; height: 140px; font-size: 18px; }
+            .app-card.prev { transform: translateX(-160px) scale(0.8) rotateY(25deg); }
+            .app-card.next { transform: translateX(160px) scale(0.8) rotateY(-25deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <a href="{% url 'core:index' %}">
+            <div class="brand">
+                <img src="{% static 'images/kiwi/W_KIWI.png' %}" alt="KIWI Logo" class="brand-logo" id="brand_logo" draggable="true">
+                <span>KIWI</span>
+            </div>
+        </a>
+        <div class="nav-right">
+            <button class="theme-btn" id="theme_toggle" title="테마 변경"><i class="fa-solid fa-moon"></i></button>
+            
+            {% if request.session.user_id %}
+                <!-- 로그인 상태 -->
+                <span style="color: var(--text-sub); font-size: 0.9rem;">
+                    {{ request.session.user_name }}님
+                </span>
+                
+                <!-- 마이페이지 아이콘 -->
+                {% if user_app_icon %}
+                    <div class="user-avatar" style="background-color: transparent; overflow: hidden;">
+                        <a href="{% url 'mypage:mypage' %}" style="display: flex; align-items: center;">
+                            <img src="{{ user_app_icon }}" alt="App Icon" style="width: 100%; height: 100%; object-fit: cover;">
+                        </a>
+                    </div>
+                {% else %}
+                     <a href="{% url 'mypage:mypage' %}" style="display: flex; align-items: center;">
+                         <div class="user-avatar">{{ user_name|slice:":1"|upper }}</div>
+                     </a>
+                {% endif %}
+
+                <!-- [★수정] btn-primary를 btn-ghost로 변경하여 스타일 통일 -->
+                {% if request.session.u_admin %}
+                    <button class="btn btn-ghost" onclick="location.href='/adminpage/'">관리자 페이지</button>
+                {% else %}
+                    <button class="btn btn-ghost" onclick="location.href='/main/'">메인 페이지</button>
+                {% endif %}
+                
+                <button class="btn btn-primary" onclick="logout()">로그아웃</button>
+            {% else %}
+                <!-- 비로그인 상태 -->
+                <button class="btn btn-ghost" onclick="open_modal('login')">로그인</button>
+                <button class="btn btn-primary" onclick="open_modal('signup')">회원가입</button>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            {% if request.session.user_id %}
+                <!-- 로그인 상태: 환영 메시지 -->
+                <div class="hero-badge">Welcome Back!</div>
+                <h1>환영합니다,<br><span style="color: var(--primary-color);">{{ request.session.user_name }}</span>님!</h1>
+                <p>
+                    오늘도 KIWI와 함께 앱 트렌드를 분석해보세요.<br>
+                    대시보드에서 최신 인사이트를 확인할 수 있습니다.
+                </p>
+                <div class="hero-cta-group">
+                    <!-- [★수정] 관리자 여부에 따라 CTA 버튼 변경 -->
+                    {% if request.session.u_admin %}
+                        <button class="btn btn-primary" onclick="location.href='/adminpage/'">
+                            <i class="fa-solid fa-gear"></i> 관리자 페이지로 이동
+                        </button>
+                    {% else %}
+                        <button class="btn btn-primary" onclick="location.href='/main/'">
+                            <i class="fa-solid fa-chart-line"></i> 메인 페이지로 이동
+                        </button>
+                    {% endif %}
+                    
+                    <button class="btn btn-ghost" onclick="logout()">로그아웃</button>
+                </div>
+            {% else %}
+                <!-- 비로그인 상태: 기존 내용 -->
+                <div class="hero-badge">All Categories Supported</div>
+                <h1>모바일 앱 트렌드<br>심층 분석 리포트</h1>
+                <p>
+                    OTT, SNS, 메신저 등 8개 주요 카테고리의 데이터를<br>
+                    AI가 실시간으로 분석하여 인사이트를 제공합니다.
+                </p>
+                <div class="hero-cta-group">
+                    <button class="btn btn-primary" onclick="open_modal('signup')">지금 시작하기</button>
+                    <button class="btn btn-ghost" onclick="open_modal('login')">로그인</button>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Carousel (이하는 기존과 동일) -->
+    <section class="platforms-section">
+        <div class="section-title">
+            <h2>App Categories</h2>
+            <p>다양한 분야의 앱 데이터를 분석하여 인사이트를 제공합니다.</p>
+        </div>
+        
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carousel_track">
+                <div class="app-card cat-ott" data-idx="0">
+                    <i class="fa-solid fa-play"></i><span>OTT</span>
+                </div>
+                <div class="app-card cat-sns" data-idx="1">
+                    <i class="fa-solid fa-hashtag"></i><span>SNS</span>
+                </div>
+                <div class="app-card cat-messenger" data-idx="2">
+                    <i class="fa-solid fa-comments"></i><span>Messenger</span>
+                </div>
+                <div class="app-card cat-music" data-idx="3">
+                    <i class="fa-solid fa-music"></i><span>Music</span>
+                </div>
+                <div class="app-card cat-camera" data-idx="4">
+                    <i class="fa-solid fa-camera"></i><span>Camera</span>
+                </div>
+                <div class="app-card cat-education" data-idx="5">
+                    <i class="fa-solid fa-graduation-cap"></i><span>Education</span>
+                </div>
+                <div class="app-card cat-shopping" data-idx="6">
+                    <i class="fa-solid fa-cart-shopping"></i><span>Shopping</span>
+                </div>
+                <div class="app-card cat-map" data-idx="7">
+                    <i class="fa-solid fa-map-location-dot"></i><span>Map</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <div class="features-container">
+            <div class="feature-box">
+                <i class="fa-solid fa-robot"></i>
+                <h3>AI RAG Chat</h3>
+                <p>수천 페이지의 보고서를 읽을 필요 없습니다.</p><p>챗봇에게 질문하면 문맥을 파악하여 답변합니다.</p>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-chart-simple"></i>
+                <h3>Category Analysis</h3>
+                <p>카테고리별 특화된 분석 지표를 제공하여</p><p>더 깊이 있는 인사이트를 도출합니다.</p>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-face-smile"></i>
+                <h3>Emotion Analysis</h3>
+                <p>사용자들의 오피니언 감성분석을 통해 더욱</p><p>정확한 개선사항을 제시합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 KIWI Inc. All rights reserved.</p>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth_modal">
+        <div class="modal-box">
+            <button onclick="close_modal()" style="position:absolute; right:20px; top:20px; background:none; border:none; color:var(--text-sub); font-size:1.2rem; cursor:pointer;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+            <div id="modal_content"></div>
+        </div>
+    </div>
+
+    <!-- 공통 알림 모달 -->
+    <div class="alert-modal" id="alert_modal">
+        <div class="alert-modal-content">
+            <div class="alert-modal-header" id="alert_header">
+                <i class="fa-solid fa-circle-info"></i> <span id="alert_title">알림</span>
+            </div>
+            <div class="alert-modal-body" id="alert_body">
+                메시지가 여기에 표시됩니다
+            </div>
+            <div class="alert-modal-actions" id="alert_actions">
+                <button class="alert-modal-btn confirm" onclick="closeAlertModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="toast-message" id="toast_message">로그아웃 되었습니다</div>
+    </div>
+
+    <script>
+        /* 로고 URL */
+        const STATIC_BASE_URL = "{% static '' %}"; 
+        const KIWI_STATIC_URL = STATIC_BASE_URL + 'images/kiwi/';
+
+        /* ===== 반려키위 최대 개수 설정 ===== */
+        const max_kiwi_count = 3; // 이 값을 변경하여 최대 키위 개수 조절
+
+        /* --- 1. Carousel Logic --- */
+        const cards = document.querySelectorAll('.app-card');
+        let current_index = 0;
+        const total_cards = cards.length;
+
+        function update_carousel() {
+            cards.forEach((card, index) => {
+                card.classList.remove('active', 'prev', 'next', 'hidden');
+                
+                let diff = (index - current_index);
+                if (diff < -Math.floor(total_cards/2)) diff += total_cards;
+                if (diff > Math.floor(total_cards/2)) diff -= total_cards;
+
+                if (diff === 0) card.classList.add('active');
+                else if (diff === -1) card.classList.add('prev');
+                else if (diff === 1) card.classList.add('next');
+                else card.classList.add('hidden');
+            });
+        }
+
+        function next_slide() {
+            current_index = (current_index + 1) % total_cards;
+            update_carousel();
+        }
+
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                current_index = index;
+                update_carousel();
+            });
+        });
+
+        let auto_play = setInterval(next_slide, 1500);
+        const wrapper = document.querySelector('.carousel-wrapper');
+        wrapper.addEventListener('mouseenter', () => clearInterval(auto_play));
+        wrapper.addEventListener('mouseleave', () => auto_play = setInterval(next_slide, 1500));
+        
+        update_carousel();
+
+        /* --- 2. Dark Mode Logic --- */
+        const theme_btn = document.getElementById('theme_toggle');
+        const theme_icon = theme_btn.querySelector('i');
+        const body = document.body;
+        const brand_logo = document.getElementById('brand_logo');
+
+        const saved_theme = localStorage.getItem('theme');
+        if (saved_theme === 'dark') {
+            body.classList.add('dark-mode');
+            theme_icon.classList.replace('fa-moon', 'fa-sun');
+            brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+        }
+
+        theme_btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const is_dark = body.classList.contains('dark-mode');
+            
+            if (is_dark) {
+                theme_icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+                brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+            } else {
+                theme_icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+                brand_logo.src = KIWI_STATIC_URL + 'W_KIWI.png';
+            }
+
+            // 모든 활성 키위 이미지 업데이트
+            pets.forEach(pet => {
+                if (pet.active) {
+                    const base_name = is_dark ? 'R_B_KIWI' : 'R_W_KIWI';
+                    pet.element.src = KIWI_STATIC_URL + `${base_name}${pet.frame}.png`;
+                }
+            });
+        });
+
+        /* --- 3. Modal Logic --- */
+        const modal = document.getElementById('auth_modal');
+        const modal_content = document.getElementById('modal_content');
+
+        // CSRF 토큰 가져오기
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // 아이디 중복 체크 여부 (전역 변수)
+        let id_checked = false;
+
+        function open_modal(mode) {
+            modal.classList.add('active');
+            
+            if(mode === 'login') {
+                modal_content.innerHTML = `
+                    <h2 style="text-align:center; margin-bottom:20px;">로그인</h2>
+                    <form id="login_form">
+                        <div class="input-group">
+                            <label>아이디</label>
+                            <input type="text" id="login_id" required>
+                        </div>
+                        <div class="input-group">
+                            <label>비밀번호</label>
+                            <input type="password" id="login_pw" required>
+                        </div>
+                        <button type="submit" class="auth-btn">로그인</button>
+                    </form>
+                    <div class="switch-auth">계정이 없으신가요? <span onclick="open_modal('signup')">회원가입</span></div>
+                `;
+                
+                document.getElementById('login_form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    login_user();
+                });
+                
+            } else {
+                modal_content.innerHTML = `
+                    <h2 style="text-align:center; margin-bottom:20px;">회원가입</h2>
+                    <form id="signup_form">
+                        <div class="input-group">
+                            <label>닉네임 (이름)</label>
+                            <input type="text" id="signup_name" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>이메일 (회사 이메일)</label>
+                            <input type="email" id="signup_email" required 
+                                placeholder="example@company.com"
+                                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}">
+                            <small style="color: var(--text-sub); font-size: 0.8rem;">
+                                회사 이메일 입력 시 자동으로 소속 앱이 등록됩니다
+                            </small>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>아이디</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="signup_id" required 
+                                    placeholder="영문3글자+숫자1개 이상, 최소 4글자"
+                                    style="flex: 1;">
+                                <button type="button" onclick="check_id_duplicate()" 
+                                        style="padding: 8px 15px; background: var(--primary-color); 
+                                            color: white; border: none; border-radius: 5px; 
+                                            cursor: pointer; white-space: nowrap;">
+                                    중복확인
+                                </button>
+                            </div>
+                            <small id="id_check_msg" style="font-size: 0.8rem;"></small>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>비밀번호</label>
+                            <input type="password" id="signup_pw" required
+                                placeholder="영문, 숫자, 특수문자 포함">
+                            <div id="pw_rules" style="display: none; margin-top: 10px; 
+                                                    padding: 10px; background: rgba(59,130,246,0.1); 
+                                                    border-radius: 5px; font-size: 0.85rem;">
+                                <div>✓ 영문자 포함</div>
+                                <div>✓ 숫자 포함</div>
+                                <div>✓ 특수문자 포함</div>
+                                <div>✓ 8자 이상</div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>비밀번호 확인</label>
+                            <input type="password" id="signup_pw_confirm" required>
+                            <small id="pw_match_msg" style="font-size: 0.8rem;"></small>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn" id="signup_btn" disabled>가입하기</button>
+                    </form>
+                    <div class="switch-auth">이미 계정이 있으신가요? <span onclick="open_modal('login')">로그인</span></div>
+                `;
+                
+                document.getElementById('signup_pw').addEventListener('focus', function() {
+                    document.getElementById('pw_rules').style.display = 'block';
+                });
+                
+                document.getElementById('signup_pw').addEventListener('blur', function() {
+                    document.getElementById('pw_rules').style.display = 'none';
+                });
+                
+                document.getElementById('signup_pw_confirm').addEventListener('input', function() {
+                    const pw = document.getElementById('signup_pw').value;
+                    const pw_confirm = this.value;
+                    const msg = document.getElementById('pw_match_msg');
+                    
+                    if(pw_confirm === '') {
+                        msg.textContent = '';
+                        msg.style.color = '';
+                    } else if(pw === pw_confirm) {
+                        msg.textContent = '✓ 비밀번호가 일치합니다';
+                        msg.style.color = '#22c55e';
+                    } else {
+                        msg.textContent = '✗ 비밀번호가 일치하지 않습니다';
+                        msg.style.color = '#ef4444';
+                    }
+                });
+                
+                document.getElementById('signup_id').addEventListener('input', function() {
+                    id_checked = false;
+                    document.getElementById('signup_btn').disabled = true;
+                    document.getElementById('id_check_msg').textContent = '중복확인을 해주세요';
+                    document.getElementById('id_check_msg').style.color = '#94a3b8';
+                });
+                
+                document.getElementById('signup_form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    signup_user();
+                });
+            }
+        }
+
+        function close_modal() { 
+            modal.classList.remove('active'); 
+        }
+
+        modal.addEventListener('click', (e) => { 
+            if(e.target === modal) close_modal(); 
+        });
+
+        // 공통 알림 모달 함수
+        function showAlertModal(title, message, type = 'info', callback = null) {
+            const alertModal = document.getElementById('alert_modal');
+            const header = document.getElementById('alert_header');
+            const body = document.getElementById('alert_body');
+            const actions = document.getElementById('alert_actions');
+            
+            let icon = 'fa-circle-info';
+            let btnClass = 'confirm';
+            
+            if (type === 'error') {
+                icon = 'fa-circle-xmark';
+                btnClass = 'error';
+            } else if (type === 'success') {
+                icon = 'fa-circle-check';
+                btnClass = 'success';
+            } else if (type === 'confirm') {
+                icon = 'fa-circle-question';
+                btnClass = 'confirm';
+            } else if (type === 'logout') {
+                icon = 'fa-right-from-bracket';
+                btnClass = 'confirm';
+            }
+            
+            header.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${title}</span>`;
+            body.innerHTML = message;
+            
+            if (type === 'confirm' || type === 'logout') {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn cancel" onclick="closeAlertModal()">취소</button>
+                    <button class="alert-modal-btn confirm" id="alert_confirm_btn">확인</button>
+                `;
+                document.getElementById('alert_confirm_btn').addEventListener('click', () => {
+                    closeAlertModal();
+                    if (callback) callback();
+                });
+            } else {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn ${btnClass}" onclick="closeAlertModal()">확인</button>
+                `;
+            }
+            
+            alertModal.classList.add('active');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alert_modal').classList.remove('active');
+        }
+
+        // 아이디 중복 체크
+        function check_id_duplicate() {
+            const user_id = document.getElementById('signup_id').value;
+            const msg = document.getElementById('id_check_msg');
+            const signup_btn = document.getElementById('signup_btn');
+            
+            if(!user_id) {
+                msg.textContent = '아이디를 입력해주세요';
+                msg.style.color = '#ef4444';
+                return;
+            }
+            
+            fetch('/check-id/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ user_id: user_id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.available) {
+                    msg.textContent = '✓ ' + data.message;
+                    msg.style.color = '#22c55e';
+                    id_checked = true;
+                    signup_btn.disabled = false;
+                } else {
+                    msg.textContent = '✗ ' + data.message;
+                    msg.style.color = '#ef4444';
+                    id_checked = false;
+                    signup_btn.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                msg.textContent = '중복 체크 중 오류가 발생했습니다';
+                msg.style.color = '#ef4444';
+            });
+        }
+
+        // 회원가입 처리
+        function signup_user() {
+            const name = document.getElementById('signup_name').value;
+            const email = document.getElementById('signup_email').value;
+            const user_id = document.getElementById('signup_id').value;
+            const password = document.getElementById('signup_pw').value;
+            const password_confirm = document.getElementById('signup_pw_confirm').value;
+            
+            if(!id_checked) {
+                showAlertModal('알림', '아이디 중복 체크를 해주세요', 'error');
+                return;
+            }
+            
+            if(password !== password_confirm) {
+                showAlertModal('알림', '비밀번호가 일치하지 않습니다', 'error');
+                return;
+            }
+            
+            const pw_pattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+            if(!pw_pattern.test(password)) {
+                showAlertModal('알림', '비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다', 'error');
+                return;
+            }
+            
+            fetch('/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    user_id: user_id,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showAlertModal('회원가입 완료', data.message + '<br>등록된 앱 개수: ' + data.company_apps_count, 'success');
+                    setTimeout(() => {
+                        closeAlertModal();
+                        open_modal('login');
+                    }, 1500);
+                } else {
+                    showAlertModal('회원가입 실패', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlertModal('오류', '회원가입 중 오류가 발생했습니다', 'error');
+            });
+        }
+
+        // 로그인 처리
+        function login_user() {
+            const user_id = document.getElementById('login_id').value;
+            const password = document.getElementById('login_pw').value;
+            
+            fetch('/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    user_id: user_id,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showToast(data.message);
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 500);
+                } else {
+                    showAlertModal('로그인 실패', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlertModal('오류', '로그인 중 오류가 발생했습니다', 'error');
+            });
+        }
+
+        /* --- 4. Animation --- */
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        document.querySelectorAll('.feature-box').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+
+        /* --- 5. 반려키위 Physics Engine --- */
+        let pets = [];
+        let platforms = [];
+        let animation_frame = null;
+
+        const physics = {
+            gravity: 0.5,
+            jump_force: -12,
+            move_speed: 2
+        };
+
+        function update_platforms() {
+            platforms = [];
+
+            const nav = document.querySelector('nav');
+            if (nav) {
+                const rect = nav.getBoundingClientRect();
+                platforms.push({
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            }
+            
+            document.querySelectorAll('.app-card').forEach(card => {
+                if (card.classList.contains('active') || card.classList.contains('prev') || card.classList.contains('next')) {
+                    const rect = card.getBoundingClientRect();
+                    platforms.push({
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    });
+                }
+            });
+
+            document.querySelectorAll('.feature-box').forEach(box => {
+                const rect = box.getBoundingClientRect();
+                platforms.push({
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            });
+
+            document.querySelectorAll('.btn').forEach(btn => {
+                const rect = btn.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                    platforms.push({
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    });
+                }
+            });
+
+            platforms.push({
+                x: 0,
+                y: window.innerHeight - 10,
+                width: window.innerWidth,
+                height: 10
+            });
+        }
+
+        function check_collision(pet, x, y) {
+            for (let platform of platforms) {
+                if (x + pet.width > platform.x && 
+                    x < platform.x + platform.width &&
+                    y + pet.height >= platform.y &&
+                    y + pet.height <= platform.y + platform.height + 10 &&
+                    pet.vy >= 0) {
+                    return platform;
+                }
+            }
+            return null;
+        }
+
+        function toggle_frame(pet) {
+            if (!pet.active || !pet.on_ground) return;
+            
+            pet.frame = pet.frame === 1 ? 2 : 1;
+            const is_dark = body.classList.contains('dark-mode');
+            const base_name = is_dark ? 'R_B_KIWI' : 'R_W_KIWI';
+            pet.element.src = KIWI_STATIC_URL + `${base_name}${pet.frame}.png`;
+        }
+
+        function update_physics() {
+            pets.forEach(pet => {
+                if (!pet.active) return;
+
+                pet.vy += physics.gravity;
+                pet.x += pet.vx;
+
+                if (pet.x <= 0) {
+                    pet.x = 0;
+                    pet.vx = Math.abs(pet.vx);
+                    pet.direction = 1;
+                } else if (pet.x >= window.innerWidth - pet.width) {
+                    pet.x = window.innerWidth - pet.width;
+                    pet.vx = -Math.abs(pet.vx);
+                    pet.direction = -1;
+                }
+                
+                let next_y = pet.y + pet.vy;
+                const collision = check_collision(pet, pet.x, next_y);
+                
+                if (collision) {
+                    pet.y = collision.y - pet.height;
+                    pet.vy = 0;
+                    pet.on_ground = true;
+                    
+                    if (Math.random() < 0.02) {
+                        pet.vy = physics.jump_force;
+                        pet.on_ground = false;
+                        pet.element.classList.remove('walking');
+                    }
+                } else {
+                    pet.y = next_y;
+                    pet.on_ground = false;
+                }
+
+                if (pet.y > window.innerHeight) {
+                    pet.y = -pet.height;
+                    pet.vy = 0;
+                }
+
+                pet.element.style.left = pet.x + 'px';
+                pet.element.style.top = pet.y + 'px';
+                
+                const scale_x = pet.direction === 1 ? 1 : -1;
+                pet.element.style.transform = `scaleX(${scale_x})`;
+
+                if (pet.on_ground) {
+                    pet.element.classList.add('walking');
+                } else {
+                    pet.element.classList.remove('walking');
+                }
+            });
+
+            if (Math.random() < 0.1) {
+                update_platforms();
+            }
+
+            animation_frame = requestAnimationFrame(update_physics);
+        }
+
+        function create_kiwi(x, y) {
+            if (pets.filter(p => p.active).length >= max_kiwi_count) {
+                showAlertModal('알림', `최대 ${max_kiwi_count}마리까지만 생성할 수 있습니다!`, 'info');
+                return;
+            }
+
+            const is_dark = body.classList.contains('dark-mode');
+            const kiwi_element = document.createElement('img');
+            
+            const initial_base_name = is_dark ? 'R_B_KIWI' : 'R_W_KIWI';
+            kiwi_element.src = KIWI_STATIC_URL + `${initial_base_name}1.png`;
+            
+            kiwi_element.className = 'pet-kiwi';
+            document.body.appendChild(kiwi_element);
+
+            const pet = {
+                element: kiwi_element,
+                x: x,
+                y: y,
+                vx: Math.random() > 0.5 ? physics.move_speed : -physics.move_speed,
+                vy: 0,
+                width: 80,
+                height: 80,
+                on_ground: false,
+                direction: Math.random() > 0.5 ? 1 : -1,
+                active: true,
+                frame: 1,
+                frame_interval: null
+            };
+
+            pet.direction = pet.vx > 0 ? 1 : -1;
+            pet.frame_interval = setInterval(() => toggle_frame(pet), 200);
+
+            kiwi_element.addEventListener('dblclick', () => {
+                pet.active = false;
+                kiwi_element.remove();
+                clearInterval(pet.frame_interval);
+                
+                const index = pets.indexOf(pet);
+                if (index > -1) {
+                    pets.splice(index, 1);
+                }
+            });
+
+            pets.push(pet);
+
+            if (!animation_frame) {
+                update_platforms();
+                update_physics();
+            }
+        }
+
+        brand_logo.addEventListener('dragstart', (e) => {
+            const is_dark = body.classList.contains('dark-mode');
+            const logo_src = KIWI_STATIC_URL + (is_dark ? 'R_B_KIWI1.png' : 'R_W_KIWI1.png');
+            e.dataTransfer.setData('text/plain', logo_src);
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const logo_src = e.dataTransfer.getData('text/plain');
+            
+            if (logo_src) {
+                create_kiwi(e.clientX, e.clientY);
+            }
+        });
+
+        window.addEventListener('resize', update_platforms);
+        wrapper.addEventListener('click', () => {
+            setTimeout(update_platforms, 100);
+        });
+
+        // 로그아웃 처리
+        function logout() {
+            showAlertModal('로그아웃', '정말 로그아웃 하시겠습니까?', 'logout', () => {
+                fetch('/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        showToast('로그아웃 되었습니다');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+
+        // 토스트 알림 표시
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast_message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 모달 배경 클릭시 닫기
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('alert_modal').addEventListener('click', function(e) {
+                if(e.target === this) {
+                    closeAlertModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

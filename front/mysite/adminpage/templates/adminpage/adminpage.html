@@ -1,0 +1,652 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI - Admin Dashboard</title>
+    <!-- 폰트: Pretendard -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <!-- 아이콘: FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables & Theme --- */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.95);
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger-color: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --success-color: #22c55e;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-nav: rgba(15, 23, 42, 0.95);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255,255,255,0.1);
+            --shadow-card: none;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* --- Navigation --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px;
+            background-color: var(--bg-nav);
+            backdrop-filter: blur(10px); z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .admin-badge {
+            background-color: var(--primary-color); color: white;
+            font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; vertical-align: middle;
+        }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        .theme-btn { width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
+        .btn-logout { color: var(--text-sub); font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
+        .btn-logout:hover { color: var(--danger-color); }
+
+        /* --- Layout --- */
+        .admin-container {
+            display: flex;
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 20px;
+            position: fixed; top: 70px; bottom: 0; left: 0;
+            overflow-y: auto;
+        }
+
+        .menu-category { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .menu-list { list-style: none; margin-bottom: 30px; }
+        .menu-item {
+            padding: 12px 15px; border-radius: 8px; color: var(--text-sub);
+            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center; gap: 12px;
+        }
+        .menu-item:hover { background-color: var(--bg-body); color: var(--primary-color); }
+        .menu-item.active { background-color: var(--primary-color); color: white; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
+
+        /* --- Components --- */
+        .page-header { margin-bottom: 30px; }
+        .page-header h2 { font-size: 1.8rem; margin-bottom: 5px; }
+        .page-header p { color: var(--text-sub); }
+
+        /* Dashboard Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+        .stat-card {
+            background-color: var(--bg-card); padding: 25px; border-radius: 12px;
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-card);
+            display: flex; align-items: center; gap: 20px;
+        }
+        .stat-icon {
+            width: 50px; height: 50px; border-radius: 10px; background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+        .stat-info h3 { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 5px; }
+        .stat-info .value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+
+        /* Filters */
+        .filter-bar { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+        .admin-select {
+            padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color);
+            background-color: var(--bg-card); color: var(--text-main); font-size: 0.95rem; outline: none;
+        }
+
+        /* App List */
+        .app-list-container { display: flex; flex-direction: column; gap: 15px; }
+        .app-item {
+            background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
+            overflow: hidden; transition: 0.2s;
+        }
+        .app-header {
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; background-color: var(--bg-card);
+        }
+        .app-header:hover { background-color: var(--bg-body); }
+        .app-info { display: flex; align-items: center; gap: 15px; }
+        .app-icon-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .app-meta h4 { font-size: 1.1rem; color: var(--text-main); }
+        .app-meta span { font-size: 0.85rem; color: var(--text-sub); }
+
+        .report-section {
+            display: none; border-top: 1px solid var(--border-color);
+            background-color: var(--bg-body); padding: 20px;
+        }
+        .app-item.active .report-section { display: block; }
+        .app-item.active .fa-chevron-down { transform: rotate(180deg); }
+
+        /* Tables */
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .admin-table th { text-align: left; color: var(--text-sub); padding: 12px; border-bottom: 1px solid var(--border-color); font-weight: 600; }
+        .admin-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .admin-table tr:last-child td { border-bottom: none; }
+
+        .tag-version { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; }
+        .btn-delete { color: var(--danger-color); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); font-size: 0.85rem; transition: 0.2s; }
+        .btn-delete:hover { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
+
+        .user-table-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; box-shadow: var(--shadow-card); }
+        .section-view { display: none; animation: fadeIn 0.3s; }
+        .section-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+        /* --- [추가] 공통 알림 모달 (index.html 스타일) --- */
+        .alert-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .alert-modal.active { display: flex; animation: fadeIn 0.2s ease; }
+        .alert-modal-content {
+            background: var(--bg-card); border-radius: 16px; padding: 30px;
+            max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color); animation: slideUp 0.3s ease;
+        }
+        .alert-modal-header {
+            font-size: 1.3rem; font-weight: 700; color: var(--text-main);
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .alert-modal-body { color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
+        .alert-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        
+        .alert-modal-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+        .alert-modal-btn.cancel { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
+        .alert-modal-btn.cancel:hover { background: var(--border-color); }
+        .alert-modal-btn.confirm { background: var(--primary-color); color: white; }
+        .alert-modal-btn.confirm:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .alert-modal-btn.error { background: #ef4444; color: white; }
+        .alert-modal-btn.error:hover { background: #dc2626; }
+        .alert-modal-btn.success { background: #22c55e; color: white; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- [추가] 토스트 알림 (index.html 스타일) --- */
+        .toast {
+            position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-card); color: var(--text-main); padding: 16px 24px;
+            border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;
+            z-index: 10000; opacity: 0; transition: all 0.3s ease;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast-icon { width: 24px; height: 24px; border-radius: 50%; background: #22c55e; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .toast-message { font-weight: 600; }
+
+    </style>
+</head>
+<body>
+    <!-- 1. 네비게이션 -->
+    <nav>
+        <a href="{% url 'core:index' %}">
+            <div class="brand">
+                <span>KIWI</span> <span class="admin-badge">ADMIN</span>
+            </div>
+        </a>
+        <div class="nav-right">
+            <button class="theme-btn" id="theme_toggle"><i class="fa-solid fa-moon"></i></button>
+            <span style="font-weight: 600; font-size: 0.9rem;">
+                {{ user.u_name }}님 <!-- 서버에서 넘겨준 user 객체 사용 -->
+            </span>
+            <!-- [수정] 로그아웃 버튼에 onclick 이벤트 연결 -->
+            <button class="btn-logout" onclick="logout()">로그아웃</button>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- 2. 사이드바 -->
+        <aside class="sidebar">
+            <div class="menu-category">Overview</div>
+            <ul class="menu-list">
+                <li class="menu-item active" onclick="switchTab('dashboard')">
+                    <i class="fa-solid fa-chart-pie"></i> 대시보드
+                </li>
+            </ul>
+
+            <div class="menu-category">Management</div>
+            <ul class="menu-list">
+                <li class="menu-item" onclick="switchTab('apps')">
+                    <i class="fa-solid fa-mobile-screen-button"></i> 앱 & 보고서 관리
+                </li>
+                <li class="menu-item" onclick="switchTab('users')">
+                    <i class="fa-solid fa-users-gear"></i> 유저 관리
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 3. 메인 콘텐츠 -->
+        <main class="main-content">
+
+            <!-- [탭 1] 대시보드 -->
+            <section id="dashboard" class="section-view active">
+                <div class="page-header">
+                    <h2>대시보드</h2>
+                    <p>KIWI 서비스의 전체 현황입니다.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-mobile-button"></i></div>
+                        <div class="stat-info">
+                            <h3>등록된 앱</h3>
+                            <div class="value">{{ total_apps_count }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color:#10b981; background:rgba(16,185,129,0.1);"><i class="fa-solid fa-file-contract"></i></div>
+                        <div class="stat-info">
+                            <h3>생성된 보고서</h3>
+                            <div class="value">{{ total_reports_count }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color:#f59e0b; background:rgba(245,158,11,0.1);"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3>전체 회원수</h3>
+                            <div class="value">{{ total_users_count }}</div>
+                        </div>
+                    </div>
+                </div>`
+            </section>
+
+            <!-- [탭 2] 앱 및 보고서 관리 -->
+            <section id="apps" class="section-view">
+                <div class="page-header">
+                    <h2>앱 & 보고서 관리</h2>
+                    <p>등록된 앱을 장르별로 조회하고, 버전에 따른 보고서를 삭제할 수 있습니다.</p>
+                </div>
+
+                <div class="filter-bar">
+                    <label style="font-weight:600;">장르 필터:</label>
+                    <select id="genreFilter" class="admin-select" onchange="filterApps()">
+                        <option value="all">전체 장르</option>
+                        {% for genre in genres %}
+                            <option value="{{ genre.ag_idx }}">{{ genre.ag_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="app-list-container" id="appList">
+                    <!-- Django Loop: Apps -->
+                    {% for app_data in apps_with_reports %}
+                    <div class="app-item" data-genre="{{ app_data.app.ag_idx.ag_idx }}">
+                        <!-- 앱 헤더 -->
+                        <div class="app-header" onclick="toggleApp(this)">
+                            <div class="app-info">
+                                {% if app_data.app.a_icon %}
+                                    <img src="{{ app_data.app.a_icon }}" alt="icon" class="app-icon-img">
+                                {% else %}
+                                    <div class="app-icon-img" style="display:flex; align-items:center; justify-content:center; color:#ccc;">
+                                        <i class="fa-solid fa-image"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="app-meta">
+                                    <h4>{{ app_data.app.a_name }} <span style="font-weight:400; font-size:0.8rem; color:var(--text-sub); margin-left:5px;">({{ app_data.genre_name }})</span></h4>
+                                    <span>개발자: {{ app_data.app.a_developer }} | 다운로드: {{ app_data.app.a_download_count }}</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down" style="color:var(--text-sub); transition:0.3s;"></i>
+                        </div>
+
+                        <!-- 보고서 리스트 섹션 -->
+                        <div class="report-section">
+                            <h5 style="margin-bottom:15px; color:var(--text-main);"><i class="fa-solid fa-list-check"></i> 버전별 보고서 목록</h5>
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th width="15%">버전</th>
+                                        <th width="50%">보고서 요약 (일부)</th>
+                                        <th width="20%">분석 완료일</th>
+                                        <th width="15%" style="text-align:center;">관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in app_data.reports %}
+                                    <tr id="report-row-{{ report.an_idx }}">
+                                        <td><span class="tag-version">Ver {{ report.version_val }}</span></td>
+                                        <td>
+                                            {% if report.an_text %}
+                                                {{ report.an_text|truncatechars:40 }}
+                                            {% else %}
+                                                <span style="color:#aaa;">내용 없음</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ report.an_vectorized_at|date:"Y-m-d H:i" }}</td>
+                                        <td style="text-align:center;">
+                                            <button class="btn-delete" onclick="confirmDeleteReport({{ report.an_idx }})">
+                                                삭제
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; padding:20px; color:var(--text-sub);">
+                                            생성된 보고서가 없습니다.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- [탭 3] 유저 관리 -->
+            <section id="users" class="section-view">
+                <div class="page-header">
+                    <h2>유저 관리</h2>
+                    <p>서비스에 가입된 회원을 조회하고 관리합니다.</p>
+                </div>
+
+                <div class="user-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>이름 (ID)</th>
+                                <th>이메일</th>
+                                <th>관리자 여부</th>
+                                <th style="text-align:center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in all_users %}
+                            <tr id="user-row-{{ u.u_idx }}">
+                                <td>{{ u.u_idx }}</td>
+                                <td>
+                                    <strong>{{ u.u_name }}</strong><br>
+                                    <span style="font-size:0.85rem; color:var(--text-sub);">{{ u.u_id }}</span>
+                                </td>
+                                <td>{{ u.u_email }}</td>
+                                <td>
+                                    {% if u.u_admin %}
+                                        <span style="color:var(--primary-color); font-weight:700;">Admin</span>
+                                    {% else %}
+                                        <span style="color:var(--text-sub);">User</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align:center;">
+                                    {% if not u.u_admin %}
+                                    <button class="btn-delete" onclick="confirmDeleteUser({{ u.u_idx }}, '{{ u.u_name }}')">
+                                        강제 탈퇴
+                                    </button>
+                                    {% else %}
+                                    <span style="font-size:0.8rem; color:#aaa;">삭제 불가</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- [추가] 공통 알림 모달 (로그아웃/삭제 확인용) -->
+    <div class="alert-modal" id="alert_modal">
+        <div class="alert-modal-content">
+            <div class="alert-modal-header" id="alert_header">
+                <i class="fa-solid fa-circle-info"></i> <span id="alert_title">알림</span>
+            </div>
+            <div class="alert-modal-body" id="alert_body">
+                메시지가 여기에 표시됩니다
+            </div>
+            <div class="alert-modal-actions" id="alert_actions">
+                <!-- 동적으로 버튼 생성 -->
+                <button class="alert-modal-btn confirm" onclick="closeAlertModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [추가] 토스트 알림 -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="toast-message" id="toast_message">작업이 완료되었습니다</div>
+    </div>
+
+
+    <script>
+        // --- 1. 유틸리티 함수 (CSRF, 모달, 토스트) ---
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        function showAlertModal(title, message, type = 'info', callback = null) {
+            const alertModal = document.getElementById('alert_modal');
+            const header = document.getElementById('alert_header');
+            const body = document.getElementById('alert_body');
+            const actions = document.getElementById('alert_actions');
+            
+            let icon = 'fa-circle-info';
+            let btnClass = 'confirm';
+            
+            if (type === 'error') {
+                icon = 'fa-circle-xmark';
+                btnClass = 'error';
+            } else if (type === 'success') {
+                icon = 'fa-circle-check';
+                btnClass = 'success';
+            } else if (type === 'confirm') {
+                icon = 'fa-circle-question';
+                btnClass = 'confirm';
+            } else if (type === 'logout') {
+                icon = 'fa-right-from-bracket';
+                btnClass = 'confirm';
+            }
+            
+            header.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${title}</span>`;
+            body.innerHTML = message;
+            
+            if (type === 'confirm' || type === 'logout') {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn cancel" onclick="closeAlertModal()">취소</button>
+                    <button class="alert-modal-btn confirm" id="alert_confirm_btn">확인</button>
+                `;
+                document.getElementById('alert_confirm_btn').addEventListener('click', () => {
+                    closeAlertModal();
+                    if (callback) callback();
+                });
+            } else {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn ${btnClass}" onclick="closeAlertModal()">확인</button>
+                `;
+            }
+            
+            alertModal.classList.add('active');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alert_modal').classList.remove('active');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast_message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // --- 2. 로그아웃 로직 (index.html과 동일) ---
+        function logout() {
+            showAlertModal('로그아웃', '정말 로그아웃 하시겠습니까?', 'logout', () => {
+                // index.html과 동일한 API 엔드포인트(/logout/) 호출
+                fetch('/logout/', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        showToast('로그아웃 되었습니다');
+                        setTimeout(() => {
+                            window.location.href = '/'; // 메인으로 리다이렉트
+                        }, 500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // API가 없을 경우를 대비한 fallback (강제 이동)
+                    window.location.href = '/'; 
+                });
+            });
+        }
+
+
+        // --- 3. 기존 관리자 페이지 로직 ---
+
+        // 탭 전환
+        function switchTab(tabId) {
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 앱 아코디언 토글
+        function toggleApp(header) {
+            const item = header.parentElement;
+            item.classList.toggle('active');
+        }
+
+        // 장르 필터링
+        function filterApps() {
+            const genreId = document.getElementById('genreFilter').value;
+            const items = document.querySelectorAll('.app-item');
+            items.forEach(item => {
+                const itemGenre = item.getAttribute('data-genre');
+                if (genreId === 'all' || itemGenre === genreId) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 테마 토글
+        const themeBtn = document.getElementById('theme_toggle');
+        const body = document.body;
+
+        if(localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark-mode');
+            themeBtn.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const icon = themeBtn.querySelector('i');
+            if(body.classList.contains('dark-mode')) {
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+
+        // --- 4. 데이터 삭제 로직 (공통 모달 사용으로 변경) ---
+
+        function confirmDeleteReport(reportId) {
+            showAlertModal('보고서 삭제', '해당 보고서를 삭제하시겠습니까?<br>연결된 분석 데이터가 DB에서 함께 삭제됩니다.', 'confirm', () => {
+                deleteData('report', reportId);
+            });
+        }
+
+        function confirmDeleteUser(userId, userName) {
+            showAlertModal('회원 강제 탈퇴', `<strong>${userName}</strong> 회원을 탈퇴 처리하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.`, 'confirm', () => {
+                deleteData('user', userId);
+            });
+        }
+
+        function deleteData(type, id) {
+            let url = '';
+            if (type === 'report') {
+                url = `/adminpage/api/delete-report/${id}/`;
+            } else if (type === 'user') {
+                url = `/adminpage/api/delete-user/${id}/`;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showToast("삭제되었습니다.");
+                    // UI 삭제 반영
+                    const rowId = type === 'report' ? `report-row-${id}` : `user-row-${id}`;
+                    const row = document.getElementById(rowId);
+                    if(row) row.remove();
+                } else {
+                    showAlertModal('오류', "삭제 실패: " + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlertModal('오류', "서버 통신 중 오류가 발생했습니다.", 'error');
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI - My Page</title>
+    <!-- 폰트: Pretendard -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <!-- 아이콘: FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- 1. CSS Variables & Theme --- */
+        :root {
+            /* Light Mode */
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.85);
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --text-hero-grad: linear-gradient(to right, #1e293b, #475569);
+            --border-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-color: #0ea5e9;
+            --danger-color: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-nav: rgba(15, 23, 42, 0.85);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --text-hero-grad: linear-gradient(to right, #fff, #94a3b8);
+            --border-color: rgba(255,255,255,0.1);
+            --shadow-card: none;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* --- 2. Navigation --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; 
+            background-color: var(--bg-nav);
+            backdrop-filter: blur(10px); z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .brand { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0px; color: var(--text-main); }
+        .brand span { color: var(--primary-color); }
+        .brand-logo { width: 75px; height: 35px; object-fit: contain; }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color);
+            color: var(--text-main); width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { background-color: var(--border-color); }
+
+        /* 프로필 아바타 */
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background-color: var(--primary-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--border-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 공통 알림 모달 */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .alert-modal-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.3s ease;
+        }
+
+        .alert-modal-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-modal-body {
+            color: var(--text-sub);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .alert-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .alert-modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .alert-modal-btn.cancel {
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .alert-modal-btn.cancel:hover {
+            background: var(--border-color);
+        }
+
+        .alert-modal-btn.confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .alert-modal-btn.confirm:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .alert-modal-btn.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .alert-modal-btn.error:hover {
+            background: #dc2626;
+        }
+
+        .alert-modal-btn.success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .alert-modal-btn.success:hover {
+            background: #16a34a;
+        }
+
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .toast-message {
+            font-weight: 600;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- 3. Layout: Sidebar + Content --- */
+        .mypage-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* --- Sidebar Style --- */
+        .sidebar {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            height: fit-content;
+            position: sticky; top: 100px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .user-summary {
+            text-align: center; margin-bottom: 25px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .user-summary img {
+            width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;
+            border: 3px solid var(--bg-body); box-shadow: 0 0 0 2px var(--primary-color);
+        }
+        .user-summary h3 { font-size: 1.1rem; margin-bottom: 5px; color: var(--text-main); }
+        .user-summary p { font-size: 0.85rem; color: var(--text-sub); }
+
+        .menu-list { list-style: none; }
+        .menu-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 15px; margin-bottom: 5px;
+            border-radius: 8px; color: var(--text-sub);
+            cursor: pointer; transition: all 0.2s; font-weight: 500;
+        }
+        .menu-item:hover { background-color: var(--bg-body); color: var(--primary-color); }
+        .menu-item.active { background-color: var(--primary-color); color: white; }
+        .menu-item i { width: 20px; text-align: center; }
+
+        /* --- Content Area Style --- */
+        .content-area {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            min-height: 600px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .tab-section { display: none; animation: fadeIn 0.3s ease-out; }
+        .tab-section.active { display: block; }
+
+        .section-header { margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .section-header h2 { font-size: 1.8rem; margin-bottom: 10px; color: var(--text-main); }
+        .section-header p { color: var(--text-sub); }
+
+        /* --- Forms & Inputs --- */
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
+        .form-input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-body);
+            color: var(--text-main); font-size: 1rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--primary-color); }
+        .form-input:disabled { opacity: 0.6; cursor: not-allowed; background-color: var(--border-color); }
+
+        .btn-save {
+            background-color: var(--primary-color); color: white;
+            padding: 12px 30px; border-radius: 8px; font-weight: 600;
+            float: right; transition: 0.2s;
+        }
+        .btn-save:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        /* --- Component: App Grid --- */
+        .app-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .my-app-card {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; 
+            padding: 20px;
+            text-align: center; 
+            cursor: pointer; 
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .my-app-card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
+
+        .my-app-icon { 
+            width: 60px;
+            height: 60px;
+            margin-bottom: 12px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .my-app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .my-app-icon i { 
+            font-size: 2.5rem; 
+            color: var(--text-main); 
+        }
+
+        .my-app-name { 
+            font-weight: 700; 
+            color: var(--text-main); 
+            font-size: 0.95rem;
+            word-break: keep-all;
+        }
+
+        /* --- Component: Report Table --- */
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th { text-align: left; color: var(--text-sub); font-weight: 600; padding: 15px 10px; border-bottom: 1px solid var(--border-color); }
+        .report-table td { padding: 15px 10px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .report-table tr:last-child td { border-bottom: none; }
+        .tag {
+            font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold;
+            background: rgba(59, 130, 246, 0.1); color: var(--primary-color);
+        }
+
+        /* --- Component: Subscription --- */
+        .sub-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white; padding: 30px; border-radius: 12px;
+            margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .sub-info h3 { font-size: 1.5rem; margin-bottom: 5px; }
+        .sub-info p { opacity: 0.9; }
+        .btn-sub-action {
+            background: rgba(255,255,255,0.2); color: white;
+            padding: 10px 20px; border-radius: 6px; backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .btn-sub-action:hover { background: rgba(255,255,255,0.3); }
+
+        /* --- Component: Danger Zone --- */
+        .danger-zone {
+            margin-top: 50px; padding: 25px;
+            border: 1px solid var(--danger-color);
+            border-radius: 12px; background-color: var(--danger-bg);
+        }
+        .danger-title { color: var(--danger-color); font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .btn-danger {
+            background-color: var(--danger-color); color: white;
+            padding: 10px 20px; border-radius: 6px; font-weight: 600;
+            margin-top: 15px;
+        }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        /* --- Footer --- */
+        footer {
+            padding: 40px; text-align: center; border-top: 1px solid var(--border-color);
+            color: var(--text-sub); background-color: var(--bg-body);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .mypage-container { grid-template-columns: 1fr; }
+            .sidebar { position: static; margin-bottom: 20px; }
+            .content-area { padding: 20px; min-height: auto; }
+            .menu-list { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; }
+            .menu-item { flex-shrink: 0; white-space: nowrap; margin-bottom: 0; }
+            .sub-card { flex-direction: column; text-align: center; gap: 15px; }
+        }
+
+        /* 보고서 관리 버튼 스타일 */
+        .btn-icon {
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-body);
+            color: var(--text-sub);
+            margin: 0 2px;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-icon:hover {
+            background-color: var(--border-color);
+            color: var(--primary-color);
+        }
+        .btn-icon.delete:hover {
+            background-color: var(--danger-bg);
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 네비게이션 바 -->
+    <nav>
+        <a href="{% url 'core:index' %}">
+            <div class="brand">
+                <img src="{% static 'images/kiwi/W_KIWI.png' %}" alt="KIWI Logo" class="brand-logo" id="brand_logo">
+                <span>KIWI</span>
+            </div>
+        </a>
+        <div class="nav-right">
+            <button class="theme-btn" id="theme_toggle" title="테마 변경">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            {% if user_app_icon %}
+                <div class="user-avatar" style="background-color: transparent; overflow: hidden;">
+                    <img src="{{ user_app_icon }}" alt="App Icon" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+            {% else %}
+                <div class="user-avatar">{{ user_name|slice:":1"|upper }}</div>
+            {% endif %}
+            <button class="logout-btn" onclick="logout()">로그아웃</button>
+        </div>
+    </nav>
+
+    <!-- 2. 마이페이지 메인 컨테이너 -->
+    <div class="mypage-container">
+        
+        <!-- 2-1. 사이드바 -->
+        <aside class="sidebar">
+            <div class="user-summary">
+                {% if user_app_icon %}
+                    <img src="{{ user_app_icon }}" alt="App Icon">
+                {% else %}
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ user_name }}" alt="User Profile">
+                {% endif %}
+                <h3>{{ user_name }}</h3>
+                <p>{{ user_email }}</p>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-item active" data-target="profile">
+                    <i class="fa-solid fa-user-gear"></i> 프로필 설정
+                </li>
+                <li class="menu-item" data-target="myapps">
+                    <i class="fa-solid fa-layer-group"></i> 나의 앱 리스트
+                </li>
+                <li class="menu-item" data-target="reports">
+                    <i class="fa-solid fa-file-lines"></i> 저장된 보고서
+                </li>
+                <li class="menu-item" data-target="subscription">
+                    <i class="fa-solid fa-credit-card"></i> 구독 관리
+                </li>
+                <li class="menu-item" data-target="security">
+                    <i class="fa-solid fa-shield-halved"></i> 보안 및 탈퇴
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 2-2. 콘텐츠 영역 -->
+        <main class="content-area">
+            
+            <!-- [탭 1] 프로필 설정 -->
+            <section id="profile" class="tab-section active">
+                <div class="section-header">
+                    <h2>프로필 설정</h2>
+                    <p>기본 회원 정보를 수정하고 관리할 수 있습니다.</p>
+                </div>
+                <form id="profile_form">
+                    <div class="form-group">
+                        <label>닉네임 변경</label>
+                        <input type="text" class="form-input" id="user_name_input" value="{{ user_name }}" placeholder="변경할 닉네임을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label>이메일 변경</label>
+                        <input type="email" class="form-input" id="user_email_input" value="{{ user_email }}" placeholder="변경할 이메일을 입력하세요">
+                        <p style="font-size:0.8rem; color:var(--text-sub); margin-top:5px;">
+                            <i class="fa-solid fa-circle-info"></i> 이메일 변경 시 인증 메일이 발송될 수 있습니다.
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label>소속 회사</label>
+                        <input type="text" class="form-input" value="{{ user_company }}" disabled>
+                        <p style="font-size:0.8rem; color:var(--text-sub); margin-top:5px;">
+                            <i class="fa-solid fa-building"></i> 소속 회사는 이메일 도메인으로 자동 설정되며 변경할 수 없습니다.
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label>현재 비밀번호 확인</label>
+                        <input type="password" class="form-input" id="profile_password" placeholder="보안을 위해 비밀번호를 입력해주세요" required>
+                        <p style="font-size:0.8rem; color:var(--text-sub); margin-top:5px;">
+                            <i class="fa-solid fa-lock"></i> 정보 변경을 위해 현재 비밀번호가 필요합니다.
+                        </p>
+                    </div>
+                    <button type="submit" class="btn-save">변경사항 저장</button>
+                    <div style="clear:both;"></div>
+                </form>
+            </section>
+
+            <!-- [탭 2] 나의 앱 리스트 -->
+            <section id="myapps" class="tab-section">
+                <div class="section-header">
+                    <h2>나의 앱 리스트</h2>
+                    <p>등록된 앱 목록입니다. (소속 회사의 앱이 자동으로 등록됩니다)</p>
+                </div>
+                <div class="app-grid" id="app_grid">
+                    {% for app in user_apps %}
+                    <div class="my-app-card" data-app-id="{{ app.a_idx }}">
+                        <div class="my-app-icon">
+                            {% if user_app_icon %}
+                                <img src="{{ user_app_icon }}" alt="App Icon">
+                            {% else %}
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            {% endif %}
+                        </div>
+                        <div class="my-app-name">{{ app.a_name }}</div>
+                    </div>
+                    {% empty %}
+                    <p style="color: var(--text-sub);">등록된 앱이 없습니다.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- [탭 3] 저장된 보고서 -->
+            <section id="reports" class="tab-section">
+                <div class="section-header">
+                    <h2>저장된 보고서</h2>
+                    <p>AI가 생성했던 분석 리포트 내역입니다.</p>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th width="40%">리포트 제목</th>
+                                <th width="20%">분석 기간</th>
+                                <th width="15%">형식</th>
+                                <th width="25%" style="text-align: center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="saved_report_list">
+                            {% if saved_reports %}
+                                {% for report in saved_reports %}
+                                <tr id="report-row-{{ report.an_idx }}">
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--text-main);">
+                                            {{ report.app_name }}
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: var(--text-sub);">
+                                            Ver. {{ report.version }}
+                                        </div>
+                                    </td>
+                                    <td>{{ report.quarter }}</td>
+                                    <td><span class="tag">AI Report</span></td>
+                                    <td style="text-align: center;">
+                                        <!-- 메인 페이지로 이동하여 보기 (선택 사항) -->
+                                        <button class="btn-icon" onclick="viewReport({{ report.an_idx }})" title="보러가기">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                        </button>
+                                        
+                                        <!-- PDF 다운로드 -->
+                                        <button class="btn-icon" onclick="downloadReport({{ report.an_idx }})" title="PDF 다운로드">
+                                            <i class="fa-solid fa-download"></i>
+                                        </button>
+
+                                        <!-- 삭제(저장 취소) 버튼 -->
+                                        <button class="btn-icon delete" onclick="removeSavedReport({{ report.an_idx }})" title="목록에서 삭제">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:var(--text-sub); padding:40px;">
+                                        <i class="fa-regular fa-bookmark" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                                        저장된 보고서가 없습니다.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- [탭 4] 구독 관리 -->
+            <section id="subscription" class="tab-section">
+                <div class="section-header">
+                    <h2>구독 관리</h2>
+                    <p>현재 이용 중인 멤버십 플랜을 관리합니다.</p>
+                </div>
+                <div style="text-align:center; color:var(--text-sub); padding:60px 20px;">
+                    <i class="fa-solid fa-credit-card" style="font-size:3rem; margin-bottom:20px; opacity:0.5;"></i>
+                    <h3 style="margin-bottom:10px;">구독 관리 기능 준비 중</h3>
+                    <p>곧 다양한 멤버십 플랜을 만나보실 수 있습니다.</p>
+                </div>
+            </section>
+
+            <!-- [탭 5] 보안 및 탈퇴 -->
+            <section id="security" class="tab-section">
+                <div class="section-header">
+                    <h2>보안 설정</h2>
+                    <p>비밀번호를 변경하거나 계정을 관리합니다.</p>
+                </div>
+                
+                <!-- 비밀번호 변경 폼 -->
+                <form id="password_form">
+                    <div class="form-group">
+                        <label>현재 비밀번호</label>
+                        <input type="password" class="form-input" id="current_pw" placeholder="현재 사용 중인 비밀번호" required>
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호</label>
+                        <input type="password" class="form-input" id="new_pw" placeholder="새 비밀번호 (영문, 숫자, 특수문자 포함 8자 이상)" required>
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호 확인</label>
+                        <input type="password" class="form-input" id="new_pw_confirm" placeholder="새 비밀번호 다시 입력" required>
+                    </div>
+                    <button type="submit" class="btn-save">비밀번호 변경</button>
+                    <div style="clear:both;"></div>
+                </form>
+
+                <!-- 회원 탈퇴 -->
+                <div class="danger-zone">
+                    <div class="danger-title">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 회원 탈퇴
+                    </div>
+                    <p style="color:var(--text-sub); font-size:0.9rem;">
+                        계정을 삭제하면 저장된 모든 보고서와 분석 데이터가 영구적으로 삭제됩니다.<br>
+                        이 작업은 되돌릴 수 없습니다.
+                    </p>
+                    <button class="btn-danger" onclick="deleteAccount()">계정 삭제하기</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- 3. 푸터 -->
+    <footer>
+        <p>&copy; 2026 KIWI Inc. All rights reserved.</p>
+    </footer>
+
+    <!-- 공통 알림 모달 -->
+    <div class="alert-modal" id="alert_modal">
+        <div class="alert-modal-content">
+            <div class="alert-modal-header" id="alert_header">
+                <i class="fa-solid fa-circle-info"></i> <span id="alert_title">알림</span>
+            </div>
+            <div class="alert-modal-body" id="alert_body">
+                메시지가 여기에 표시됩니다
+            </div>
+            <div class="alert-modal-actions" id="alert_actions">
+                <button class="alert-modal-btn confirm" onclick="closeAlertModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="toast-message" id="toast_message">로그아웃 되었습니다</div>
+    </div>
+
+    <script>
+        /* 로고 URL */
+        const STATIC_BASE_URL = "{% static '' %}";
+        const KIWI_STATIC_URL = STATIC_BASE_URL + "images/kiwi/";
+
+        /* CSRF 토큰 */
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        /* --- 1. 테마(Dark Mode) 로직 --- */
+        const theme_btn = document.getElementById('theme_toggle');
+        const theme_icon = theme_btn.querySelector('i');
+        const body = document.body;
+        const brand_logo = document.getElementById('brand_logo');
+
+        const saved_theme = localStorage.getItem('theme');
+        if (saved_theme === 'dark') {
+            body.classList.add('dark-mode');
+            theme_icon.classList.replace('fa-moon', 'fa-sun');
+            brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+        }
+
+        theme_btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                theme_icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+                brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+            } else {
+                theme_icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+                brand_logo.src = KIWI_STATIC_URL + 'W_KIWI.png';
+            }
+        });
+
+        /* --- 2. 탭 전환 로직 --- */
+        const menu_items = document.querySelectorAll('.menu-item');
+        const sections = document.querySelectorAll('.tab-section');
+
+        menu_items.forEach(item => {
+            item.addEventListener('click', () => {
+                menu_items.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                sections.forEach(sec => sec.classList.remove('active'));
+                
+                const target_id = item.getAttribute('data-target');
+                const target_section = document.getElementById(target_id);
+                if (target_section) {
+                    target_section.classList.add('active');
+                }
+            });
+        });
+
+        /* --- 공통 알림 모달 함수 --- */
+        // 공통 알림 모달 함수
+        function showAlertModal(title, message, type = 'info', callback = null) {
+            const alertModal = document.getElementById('alert_modal');
+            const header = document.getElementById('alert_header');
+            const body = document.getElementById('alert_body');
+            const actions = document.getElementById('alert_actions');
+            
+            let icon = 'fa-circle-info';
+            let btnClass = 'confirm';
+            
+            if (type === 'error') {
+                icon = 'fa-circle-xmark';
+                btnClass = 'error';
+            } else if (type === 'success') {
+                icon = 'fa-circle-check';
+                btnClass = 'success';
+            } else if (type === 'confirm') {
+                icon = 'fa-circle-question';
+                btnClass = 'confirm';
+            } else if (type === 'logout') {
+                icon = 'fa-right-from-bracket';
+                btnClass = 'confirm';
+            }
+            
+            header.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${title}</span>`;
+            body.innerHTML = message;
+            
+            if (type === 'confirm' || type === 'logout') {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn cancel" onclick="closeAlertModal()">취소</button>
+                    <button class="alert-modal-btn confirm" id="alert_confirm_btn">확인</button>
+                `;
+                document.getElementById('alert_confirm_btn').addEventListener('click', () => {
+                    closeAlertModal();
+                    if (callback) callback();
+                });
+            } else {
+                actions.innerHTML = `
+                    <button class="alert-modal-btn ${btnClass}" onclick="closeAlertModal()">확인</button>
+                `;
+                // success 타입일 때 콜백 실행
+                if (type === 'success' && callback) {
+                    const confirmBtn = actions.querySelector('.alert-modal-btn');
+                    confirmBtn.addEventListener('click', () => {
+                        closeAlertModal();
+                        callback();
+                    });
+                }
+            }
+            
+            alertModal.classList.add('active');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alert_modal').classList.remove('active');
+        }
+
+        /* --- 3. 프로필 수정 --- */
+        // 원래 값 저장
+        const original_name = "{{ user_name }}";
+        const original_email = "{{ user_email }}";
+        
+        document.getElementById('profile_form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const new_name = document.getElementById('user_name_input').value.trim();
+            const new_email = document.getElementById('user_email_input').value.trim();
+            const password = document.getElementById('profile_password').value;
+            
+            // 비밀번호 입력 확인
+            if (!password) {
+                showAlertModal('알림', '현재 비밀번호를 입력해주세요.', 'error');
+                return;
+            }
+            
+            // 변경사항 확인
+            if (new_name === original_name && new_email === original_email) {
+                showAlertModal('알림', '변경된 내용이 없습니다.', 'info');
+                return;
+            }
+            
+            // 이메일 정규식 검사
+            const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!email_pattern.test(new_email)) {
+                showAlertModal('알림', '올바른 이메일 형식이 아닙니다.', 'error');
+                return;
+            }
+            
+            // 도메인 비교 (@ 이후 부분)
+            const original_domain = original_email.split('@')[1];
+            const new_domain = new_email.split('@')[1];
+            
+            if (original_domain !== new_domain) {
+                showAlertModal('알림', `이메일 도메인은 기존 도메인(@${original_domain})과 동일해야 합니다.`, 'error');
+                return;
+            }
+            
+            fetch('/mypage/update-profile/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    name: new_name,
+                    email: new_email,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showAlertModal('프로필 수정 완료', '프로필이 수정되었습니다.', 'success', () => {
+                        location.reload();
+                    });
+                } else {
+                    showAlertModal('프로필 수정 실패', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlertModal('오류', '프로필 수정 중 오류가 발생했습니다.', 'error');
+            });
+        });
+
+        /* --- 4. 비밀번호 변경 --- */
+        document.getElementById('password_form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const current_pw = document.getElementById('current_pw').value;
+            const new_pw = document.getElementById('new_pw').value;
+            const new_pw_confirm = document.getElementById('new_pw_confirm').value;
+            
+            // 비밀번호 일치 확인
+            if(new_pw !== new_pw_confirm) {
+                showAlertModal('알림', '새 비밀번호가 일치하지 않습니다.', 'error');
+                return;
+            }
+            
+            // 비밀번호 조건 확인
+            const pw_pattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+            if(!pw_pattern.test(new_pw)) {
+                showAlertModal('알림', '비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다.', 'error');
+                return;
+            }
+            
+            fetch('/mypage/change-password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    current_password: current_pw,
+                    new_password: new_pw
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showAlertModal('비밀번호 변경 완료', '비밀번호가 변경되었습니다.', 'success');
+                    document.getElementById('password_form').reset();
+                } else {
+                    showAlertModal('비밀번호 변경 실패', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlertModal('오류', '비밀번호 변경 중 오류가 발생했습니다.', 'error');
+            });
+        });
+
+        /* --- 5. 회원 탈퇴 --- */
+        function deleteAccount() {
+            showAlertModal('회원 탈퇴', '정말로 탈퇴하시겠습니까?<br><br>계정 비밀번호를 입력해주세요.<br><input type="password" id="delete_pw_input" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-body); color: var(--text-main);">', 'confirm', () => {
+                const password = document.getElementById('delete_pw_input').value;
+                
+                if(!password) {
+                    showAlertModal('알림', '비밀번호를 입력해주세요.', 'error');
+                    return;
+                }
+                
+                fetch('/mypage/delete-account/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        showAlertModal('탈퇴 완료', '계정이 삭제되었습니다.<br>그동안 KIWI를 이용해주셔서 감사합니다.', 'success', () => {
+                            window.location.href = '/';
+                        });
+                    } else {
+                        showAlertModal('탈퇴 실패', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlertModal('오류', '계정 삭제 중 오류가 발생했습니다.', 'error');
+                });
+            });
+        }
+
+        /* --- 6. 로그아웃 함수 --- */
+        function logout() {
+            showAlertModal('로그아웃', '정말 로그아웃 하시겠습니까?', 'logout', () => {
+                fetch('/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        showToast('로그아웃 되었습니다');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+
+        /* --- 7. 토스트 알림 표시 --- */
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast_message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        /* --- 모달 배경 클릭시 닫기 --- */
+        document.getElementById('alert_modal').addEventListener('click', function(e) {
+            if(e.target === this) {
+                closeAlertModal();
+            }
+        });
+
+        // 1. 보고서 삭제 (저장 취소)
+        function removeSavedReport(reportId) {
+            showAlertModal('보고서 삭제', '이 보고서를 저장 목록에서 삭제하시겠습니까?', 'confirm', () => {
+                
+                fetch(`/main/api/report/${reportId}/toggle-save/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success && !data.is_saved) {
+                        // 저장 취소 성공 시
+                        const row = document.getElementById(`report-row-${reportId}`);
+                        if(row) {
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                                // 모든 행이 삭제되었는지 체크하여 '데이터 없음' 표시 로직을 추가할 수도 있습니다.
+                                checkEmptyTable();
+                            }, 300);
+                        }
+                        showToast('목록에서 삭제되었습니다.');
+                    } else {
+                        showToast('삭제 처리에 실패했습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('서버 통신 오류가 발생했습니다.');
+                });
+            });
+        }
+
+        // 2. PDF 다운로드 (Main 페이지와 동일한 로직 사용)
+        function downloadReport(reportId) {
+            showToast('PDF 다운로드를 시작합니다...');
+            window.open(`/main/report/${reportId}/download/`, '_blank');
+        }
+
+        // 3. 보고서 보러가기 (메인으로 이동)
+        // 주의: 메인 페이지가 특정 보고서를 바로 열 수 있는 구조인지에 따라 url 파라미터 처리가 필요할 수 있습니다.
+        function viewReport(reportId) {
+            // 예: /main/?report_id=123 형태로 이동한다고 가정
+            // 메인 페이지에서 해당 쿼리스트링을 처리하는 로직이 없다면 그냥 /main/으로 이동합니다.
+            window.location.href = `/main/?report_id=${reportId}`; 
+        }
+
+        // 테이블이 비었는지 확인하는 헬퍼 함수
+        function checkEmptyTable() {
+            const tbody = document.getElementById('saved_report_list');
+            if (tbody && tbody.children.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:var(--text-sub); padding:40px;">
+                            <i class="fa-regular fa-bookmark" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                            저장된 보고서가 없습니다.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

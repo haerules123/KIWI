@@ -1,0 +1,29 @@
+# --- [LangChain Core & Community] ---
+langchain>=0.2.0
+langchain-core
+langchain-community
+langchain-text-splitters
+
+# --- [Model Integrations] ---
+langchain-groq          # Groq LLM 연동
+langchain-ollama        # Local Embeddings 연동
+langchain-huggingface   # Local Reranking 연동
+langchain-chroma        # Vector DB 연동
+
+# --- [Vector DB & Search] ---
+chromadb>=0.5.0         # 벡터 데이터베이스
+rank_bm25               # 키워드 검색(BM25) 알고리즘
+
+# --- [Local NLP & AI] ---
+torch                   # PyTorch (CPU/GPU)
+transformers            # HuggingFace Transformers
+sentence-transformers   # 임베딩/리랭킹 모델 구동용
+keybert                 # 핵심 키워드 추출
+konlpy                  # 한국어 형태소 분석 (Java 필요)
+
+# --- [Utilities] ---
+python-dotenv           # .env 파일 로드
+pydantic                # 데이터 검증
+numpy<2.0.0             # 호환성을 위해 2.0 미만 권장 (가끔 충돌 발생)
+mysql.connector         # mysql
+mysql-connector-python>=8.3.0

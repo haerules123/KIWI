@@ -1,0 +1,1552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI Dashboard - Dark Mode Ready</title>
+    <!-- Markdown Parser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+    /* --- 1. CSS Variables & Theme Config --- */
+    :root {
+        /* Light Mode (Default) */
+        --bg-body: #f1f5f9;
+        --bg-header: #ffffff;
+        --bg-panel: #ffffff;
+        --bg-sidebar: #ffffff;
+        
+        --bg-card: var(--bg-panel);
+
+        --text-main: #334155;
+        --text-sub: #64748b;
+        --text-sidebar: #334155;
+        --sidebar-border: rgba(226, 232, 240, 0.5);
+        
+        --border-color: #e2e8f0;
+        --primary-color: #3b82f6;
+        --primary-hover: #2563eb;
+        
+        /* Chat Colors */
+        --chat-bg: #f8fafc;
+        --msg-ai-bg: #f1f5f9;
+        --msg-ai-text: #334155;
+        --msg-user-bg: #eff6ff;
+        --msg-user-text: #1e3a8a;
+        --msg-user-border: #bfdbfe;
+
+        /* Document Viewer */
+        --doc-bg: #ffffff;
+        --doc-text: #1e293b;
+        --doc-shadow: rgba(0,0,0,0.1);
+
+        --gutter-color: #e2e8f0;
+        --gutter-hover: #3b82f6;
+    }
+
+    /* Dark Mode Overrides */
+    body.dark-mode {
+        --bg-body: #020617;
+        --bg-header: #0f172a;
+        --bg-panel: #1e293b;
+        --bg-sidebar: #1e293b;
+
+        --bg-card: var(--bg-panel);
+
+        --text-main: #e2e8f0;
+        --text-sub: #94a3b8;
+        --text-sidebar: #cbd5e1;
+        --sidebar-border: rgba(255, 255, 255, 0.1);
+        
+        --border-color: #334155;
+        
+        /* Chat Colors Dark */
+        --chat-bg: #1e293b;
+        --msg-ai-bg: #334155;
+        --msg-ai-text: #f1f5f9;
+        --msg-user-bg: #1d4ed8;
+        --msg-user-text: #ffffff;
+        --msg-user-border: #1e40af;
+
+        /* Document Viewer Dark */
+        --doc-bg: #0f172a;
+        --doc-text: #cbd5e1;
+        --doc-shadow: rgba(0,0,0,0.5);
+
+        --gutter-color: #475569;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    /* 모든 테마 관련 요소에 동일한 transition 적용 */
+    body, header, .sidebar, .sidebar-header, .panel, .panel-header, 
+    .report-body, .fake-doc, .msg-bubble, .accordion-content, 
+    .report-item, textarea, .gutter, .accordion-header {
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    /* --- Header --- */
+    header {
+        height: 60px;
+        background-color: var(--bg-header);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    header a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* 프로필 아바타 */
+    .user-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background-color: var(--primary-color); color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 0.9rem;
+    }
+
+    /* 로그아웃 버튼 스타일 */
+    .logout-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+        background-color: var(--border-color);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    /* 로그아웃 확인 모달 */
+    .logout-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logout-modal.active {
+        display: flex;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .logout-modal-content {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
+        animation: slideUp 0.3s ease;
+    }
+
+    .logout-modal-header {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 15px;
+    }
+
+    .logout-modal-body {
+        color: var(--text-sub);
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .logout-modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .logout-modal-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .logout-modal-btn.cancel {
+        background: var(--bg-body);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+    }
+
+    .logout-modal-btn.cancel:hover {
+        background: var(--border-color);
+    }
+
+    .logout-modal-btn.confirm {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .logout-modal-btn.confirm:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+    }
+
+    /* 토스트 알림 */
+    .toast {
+        position: fixed;
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: var(--bg-card);
+        color: var(--text-main);
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 10000;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .toast-message {
+        font-weight: 600;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .brand {
+        font-weight: 700; font-size: 1.6rem; display: flex; align-items: center; gap: 0px;
+        color: var(--text-main);
+    }
+    .brand span { color: var(--primary-color); }
+    .brand-logo { width: 75px; height: 35px; object-fit: contain; transition: opacity 0.3s; }
+
+    .header-actions {
+        display: flex; align-items: center; gap: 15px;
+    }
+    
+    /* Theme Toggle Button */
+    .theme-btn {
+        background: none; border: 1px solid var(--border-color);
+        color: var(--text-main);
+        width: 36px; height: 36px; border-radius: 50%;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .theme-btn:hover { background-color: var(--border-color); }
+
+    /* --- Layout --- */
+    .container { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+    /* --- Sidebar --- */
+    .sidebar {
+        width: 260px;
+        background-color: var(--bg-sidebar);
+        color: var(--text-sidebar);
+        display: flex; flex-direction: column; flex-shrink: 0;
+        transition: width 0.3s ease;
+        border-right: 1px solid var(--border-color);
+    }
+    .sidebar.collapsed { width: 60px; }
+
+    .sidebar-header {
+        padding: 20px; border-bottom: 1px solid var(--sidebar-border);
+        display: flex; justify-content: space-between; align-items: center;
+        height: 60px;
+    }
+    .sidebar-toggle-btn { 
+        background: none; 
+        border: none; 
+        color: inherit; 
+        cursor: pointer; 
+        font-size: 1.1rem; 
+    }
+    .sidebar-toggle-btn:hover {
+        color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .version-list { list-style: none; overflow-y: auto; flex: 1; }
+    .accordion-header {
+        padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between;
+        font-size: 0.9rem; font-weight: 500;
+    }
+    .accordion-header:hover { background-color: var(--border-color); }
+    
+    .accordion-content {
+        background-color: var(--bg-body); 
+        max-height: 0; 
+        overflow: hidden; 
+        transition: max-height 0.3s ease;
+    }
+    .accordion-content.active { 
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+
+    /* 사이드바 아이템 레이아웃 수정 (아이콘 우측 정렬) */
+    .report-item {
+        padding: 10px 15px 10px 30px; 
+        cursor: pointer; 
+        font-size: 0.85rem; 
+        color: var(--text-sub);
+        border-left: 3px solid transparent;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .report-item:hover { color: var(--text-main); background-color: var(--border-color); }
+    .report-item.selected {
+        border-left-color: var(--primary-color); color: var(--text-main); background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    /* 사이드바 저장 아이콘 호버 효과 */
+    .save-icon-sidebar {
+        padding: 5px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .save-icon-sidebar:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+
+    /* ★ 저장됨(fa-solid) 상태일 때 아이콘 색상 변경 (사이드바 및 헤더 공통) */
+    .fa-bookmark.fa-solid {
+        color: var(--primary-color); /* 파란색 활성화 */
+    }
+
+    /* Sidebar Collapsed State */
+    .sidebar.collapsed .sidebar-header span,
+    .sidebar.collapsed .accordion-header span,
+    .sidebar.collapsed .accordion-header i,
+    .sidebar.collapsed .accordion-content { display: none; }
+    .sidebar.collapsed #collapse_all_btn { display: none; }
+    .sidebar.collapsed .sidebar-header { justify-content: center; }
+
+    /* --- Main Pane (Split View) --- */
+    .main-pane { display: flex; flex: 1; width: 100%; position: relative; }
+
+    .panel {
+        background-color: var(--bg-panel);
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+        background-color: var(--bg-panel); color: var(--text-main);
+    }
+
+    /* --- Report Viewer Area --- */
+    .report-body {
+        flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-body);
+        display: flex; justify-content: center;
+        align-items: flex-start;
+    }
+    .fake-doc {
+        width: 100%;
+        max-width: 800px;
+        background-color: var(--doc-bg);
+        color: var(--doc-text);
+        padding: 50px;
+        box-shadow: 0 4px 15px var(--doc-shadow);
+        border-radius: 8px;
+    }
+    .fake-doc h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; }
+    .fake-doc p { line-height: 1.8; margin-bottom: 15px; }
+
+    /* --- Chat Interface --- */
+    .chat-area { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-panel); }
+    
+    .chat-history {
+        flex: 1; padding: 20px; overflow-y: auto;
+        display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .message { display: flex; flex-direction: column; max-width: 85%; }
+    .message.ai { align-self: flex-start; }
+    .message.user { align-self: flex-end; align-items: flex-end; }
+
+    .msg-bubble {
+        padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .message.ai .msg-bubble {
+        background-color: var(--msg-ai-bg);
+        color: var(--msg-ai-text);
+        border: 1px solid var(--border-color);
+        border-top-left-radius: 2px;
+    }
+
+    .message.user .msg-bubble {
+        background-color: var(--msg-user-bg);
+        color: var(--msg-user-text);
+        border: 1px solid var(--msg-user-border);
+        border-top-right-radius: 2px;
+    }
+
+    /* 채팅 메시지 내 Markdown 스타일 */
+    .msg-bubble h1, .msg-bubble h2, .msg-bubble h3 {
+        margin: 10px 0 8px 0;
+        font-weight: 600;
+    }
+    .msg-bubble h1 { font-size: 1.3rem; }
+    .msg-bubble h2 { font-size: 1.15rem; }
+    .msg-bubble h3 { font-size: 1.05rem; }
+
+    .msg-bubble p {
+        margin: 8px 0;
+        line-height: 1.6;
+    }
+
+    .msg-bubble ul, .msg-bubble ol {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .msg-bubble li {
+        margin: 5px 0;
+        line-height: 1.5;
+    }
+
+    .msg-bubble strong {
+        font-weight: 600;
+        color: inherit;
+    }
+
+    .msg-bubble em {
+        font-style: italic;
+    }
+
+    .msg-bubble code {
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+
+    body.dark-mode .msg-bubble code {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .msg-bubble pre {
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 10px;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 10px 0;
+    }
+
+    body.dark-mode .msg-bubble pre {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .msg-bubble pre code {
+        background: none;
+        padding: 0;
+    }
+
+    .msg-bubble blockquote {
+        border-left: 3px solid var(--primary-color);
+        padding-left: 12px;
+        margin: 10px 0;
+        color: var(--text-sub);
+        font-style: italic;
+    }
+
+    .msg-meta { font-size: 0.75rem; color: var(--text-sub); margin-top: 5px; }
+    
+    .citation {
+        display: inline-block; font-size: 0.75rem; font-weight: bold;
+        background-color: rgba(59, 130, 246, 0.15); color: var(--primary-color);
+        padding: 2px 6px; border-radius: 4px; cursor: pointer; margin-right: 4px;
+    }
+
+    .chat-input-box {
+        padding: 20px; border-top: 1px solid var(--border-color);
+        background-color: var(--bg-panel);
+    }
+    .input-wrapper { display: flex; gap: 10px; position: relative; }
+    
+    textarea {
+        flex: 1; padding: 12px 15px;
+        background-color: var(--bg-body); color: var(--text-main);
+        border: 1px solid var(--border-color);
+        border-radius: 8px; resize: none; height: 50px; outline: none;
+        font-family: inherit;
+    }
+    textarea:focus { border-color: var(--primary-color); }
+
+    .send-btn {
+        width: 50px; height: 50px; background-color: var(--primary-color);
+        color: white; border: none; border-radius: 8px; cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .send-btn:hover { background-color: var(--primary-hover); }
+
+    /* 비활성화(disabled) 상태 스타일 */
+    .send-btn:disabled {
+        background-color: #cbd5e1;  /* 회색 (Slate 300) */
+        color: #f1f5f9;             /* 연한 텍스트 */
+        cursor: not-allowed;        /* 금지 커서 아이콘 */
+        pointer-events: none;       /* 클릭 방지 (Hover 효과도 막음) */
+    }
+
+    /* 다크모드일 때 비활성화 스타일 */
+    body.dark-mode .send-btn:disabled {
+        background-color: #334155;  /* 어두운 회색 (Slate 700) */
+        color: #64748b;             /* 어두운 텍스트 */
+    }
+
+    /* --- Resizer (Gutter) --- */
+    .gutter {
+        width: 6px; background-color: var(--gutter-color);
+        cursor: col-resize; z-index: 10;
+    }
+    .gutter:hover, .gutter.dragging { background-color: var(--primary-color); }
+
+    /* --- Scrollbar Customization --- */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    body.dark-mode ::-webkit-scrollbar-thumb { background: #475569; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* --- Mobile Responsive --- */
+    @media (max-width: 768px) {
+        .gutter { display: none; }
+        .main-pane { flex-direction: column; }
+        .panel { width: 100% !important; height: 50%; }
+        .sidebar { position: absolute; height: 100%; z-index: 50; transform: translateX(-100%); }
+        .sidebar.active { transform: translateX(0); }
+        .report-body { padding: 20px; }
+        .fake-doc { padding: 25px; min-height: auto; }
+    }
+    
+    /* --- Markdown Styling (보고서용) --- */
+    .fake-doc h1, .fullscreen-content h1,
+    .fake-doc h2, .fullscreen-content h2, 
+    .fake-doc h3, .fullscreen-content h3 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        font-weight: 700;
+    }
+    .fake-doc h1, .fullscreen-content h1 { 
+        font-size: 2rem; 
+        border-bottom: 3px solid var(--primary-color); 
+        padding-bottom: 10px; 
+    }
+    .fake-doc h2, .fullscreen-content h2 { 
+        font-size: 1.5rem; 
+        border-bottom: 2px solid var(--border-color); 
+        padding-bottom: 10px; 
+        margin-bottom: 20px; 
+    }
+    .fake-doc h3, .fullscreen-content h3 { 
+        font-size: 1.2rem; 
+        color: var(--primary-color); 
+    }
+    .fake-doc p, .fullscreen-content p { 
+        line-height: 1.8; 
+        margin-bottom: 15px; 
+    }
+    .fake-doc ul, .fullscreen-content ul,
+    .fake-doc ol, .fullscreen-content ol { 
+        margin-left: 20px; 
+        margin-bottom: 15px; 
+    }
+    .fake-doc li, .fullscreen-content li { 
+        margin-bottom: 8px; 
+        line-height: 1.6; 
+    }
+    .fake-doc code, .fullscreen-content code { 
+        background-color: rgba(59, 130, 246, 0.1); 
+        padding: 2px 6px; 
+        border-radius: 4px; 
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+    .fake-doc pre, .fullscreen-content pre { 
+        background-color: var(--bg-body); 
+        padding: 15px; 
+        border-radius: 8px; 
+        overflow-x: auto;
+        border-left: 4px solid var(--primary-color);
+    }
+    .fake-doc pre code, .fullscreen-content pre code { 
+        background: none; 
+        padding: 0; 
+    }
+    .fake-doc table, .fullscreen-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    .fake-doc table th, .fullscreen-content table th,
+    .fake-doc table td, .fullscreen-content table td {
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        text-align: left;
+    }
+    .fake-doc table th, .fullscreen-content table th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 600;
+    }
+    .fake-doc blockquote, .fullscreen-content blockquote {
+        border-left: 4px solid var(--primary-color);
+        padding-left: 15px;
+        margin: 15px 0;
+        color: var(--text-sub);
+        font-style: italic;
+    }
+    .fake-doc hr, .fullscreen-content hr {
+        border: none;
+        border-top: 2px solid var(--border-color);
+        margin: 30px 0;
+    }
+    .fake-doc a, .fullscreen-content a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    .fake-doc a:hover, .fullscreen-content a:hover {
+        text-decoration: underline;
+    }
+    .fake-doc strong, .fullscreen-content strong {
+        color: var(--text-main);
+    }
+    body.dark-mode .fake-doc strong,
+    body.dark-mode .fullscreen-content strong {
+        color: #f1f5f9;
+    }
+    body.dark-mode .fake-doc code,
+    body.dark-mode .fullscreen-content code {
+        background-color: rgba(59, 130, 246, 0.2);
+    }
+    
+    /* 전체화면 모달 스타일 */
+    .fullscreen-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-body);
+        z-index: 9998;
+        overflow-y: auto;
+        padding: 40px;
+    }
+    
+    .fullscreen-modal.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .fullscreen-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: var(--bg-header);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        z-index: 9999;
+    }
+    
+    .fullscreen-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    
+    .fullscreen-close {
+        background: none;
+        border: none;
+        color: var(--text-main);
+        font-size: 1.5rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    
+    .fullscreen-close:hover {
+        background: var(--border-color);
+        color: var(--primary-color);
+    }
+    
+    .fullscreen-content {
+        max-width: 1000px;
+        margin: 80px auto 40px;
+        background: var(--doc-bg);
+        padding: 60px;
+        box-shadow: 0 4px 20px var(--doc-shadow);
+        border-radius: 8px;
+        color: var(--doc-text);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* 채팅 메시지 애니메이션 */
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes messageBounce {
+        0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.9);
+        }
+        60% {
+            opacity: 1;
+            transform: translateY(-5px) scale(1.02);
+        }
+        80% {
+            transform: translateY(2px) scale(0.98);
+        }
+        100% {
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* 초기 로드 시 애니메이션 적용 */
+    .message.initial-load {
+        animation: messageBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 일반 메시지 애니메이션 */
+    .message.new-message {
+        animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+</style>
+</head>
+<body>
+
+    <header>
+        <a href="{% url 'core:index' %}">
+            <div class="brand">
+                <img src="{% static 'images/kiwi/W_KIWI.png' %}" alt="KIWI Logo" class="brand-logo" id="brand_logo">
+                <span>KIWI</span>
+            </div>
+        </a>
+        <div class="header-actions">
+            <!-- 테마 토글 버튼 -->
+            <button class="theme-btn" id="theme_toggle" title="테마 변경">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            
+            <!-- 유저 이름 표시 -->
+            <span style="color: var(--text-sub); font-size: 0.9rem; margin-left: 5px;">
+                {{ user_name }}님
+            </span>
+            <!-- 마이페이지 아이콘 -->
+            {% if user_app_icon %}
+                <!-- 소속 회사 앱 아이콘이 있으면 이미지 표시 -->
+                <div class="user-avatar" style="background-color: transparent; overflow: hidden;">
+                    <a href="{% url 'mypage:mypage' %}" style="display: flex; align-items: center;">
+                        <img src="{{ user_app_icon }}" alt="App Icon" style="width: 100%; height: 100%; object-fit: cover;">
+                    </a>
+                </div>
+            {% else %}
+                <!-- 소속 회사가 없으면 기본 아바타 -->
+                 <a href="{% url 'mypage:mypage' %}" style="display: flex; align-items: center;">
+                     <div class="user-avatar">{{ user_name|slice:":1"|upper }}</div>
+                 </a>
+            {% endif %}
+            <!-- 로그아웃 버튼 -->
+            <button class="logout-btn" onclick="logout()">
+                로그아웃
+            </button>
+            
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>Report Explorer</span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="sidebar-toggle-btn" id="collapse_all_btn" title="전체 접기">
+                        <i class="fa-solid fa-angles-up"></i>
+                    </button>
+                    <button class="sidebar-toggle-btn" id="sidebar_collapse_btn">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            <ul class="version-list">
+                {% regroup reports by quarter as reports_by_quarter %}
+                {% for quarter_group in reports_by_quarter %}
+                <li class="accordion-item">
+                    <div class="accordion-header">
+                        <span>{{ quarter_group.grouper }} 보고서</span><i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <ul class="accordion-content {% if forloop.first %}active{% endif %}">
+                        {% for report in quarter_group.list %}
+                            <li class="report-item {% if forloop.first and forloop.parentloop.first %}selected{% endif %}" 
+                                data-report-id="{{ report.an_idx }}">
+                                <span class="report-name">{{ report.app_name }} - {{ report.version }}</span>
+                                <!-- ★ 북마크 아이콘 추가 -->
+                                <!-- 초기 상태는 DB 조회 결과(report.is_saved)에 따라 solid(저장됨)/regular(저장안됨) 결정 -->
+                                <i class="{% if report.is_saved %}fa-solid{% else %}fa-regular{% endif %} fa-bookmark save-icon-sidebar" 
+                                data-report-id="{{ report.an_idx }}" 
+                                title="저장/취소"></i>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-pane" id="main_pane">
+            
+            <!-- Left: Document Viewer -->
+            <div class="panel" id="left_panel" style="width: 50%;">
+                <div class="panel-header">
+                    {% if reports %}
+                        <span id="report-title">
+                            <i class="fa-regular fa-file-pdf"></i> {{ reports.0.app_name }} - {{ reports.0.version }}
+                        </span>
+                    {% else %}
+                        <span id="report-title">
+                            <i class="fa-regular fa-file"></i> 보고서 없음
+                        </span>
+                    {% endif %}
+                    <div style="font-size:0.8rem; color:var(--text-sub); display: flex; align-items: center;">
+                        {% if reports %}
+                            <!-- ★ 헤더 저장 버튼 추가 -->
+                            <!-- 초기 로드된 첫 번째 보고서의 상태에 맞게 아이콘 표시 -->
+                            <i class="{% if reports.0.is_saved %}fa-solid{% else %}fa-regular{% endif %} fa-bookmark" 
+                            id="header_save_btn"
+                            data-report-id="{{ reports.0.an_idx }}"
+                            style="cursor:pointer; margin-right:15px;"
+                            title="보고서 저장">
+                            </i>
+
+                            <!-- 기존 다운로드 및 전체화면 버튼 -->
+                            <i class="fa-solid fa-download" 
+                            id="download_btn"
+                            data-report-id="{{ reports.0.an_idx }}"
+                            style="cursor:pointer; margin-right:10px;"
+                            title="PDF 다운로드">
+                            </i>
+                            <i class="fa-solid fa-expand" id="fullscreen_btn" style="cursor:pointer;"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="report-body">
+                    <div class="fake-doc">
+                        {% if reports %}
+                            {% for report in reports %}
+                                {% if forloop.first %}
+                                    {{ report.content|safe }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <h2>보고서가 없습니다</h2>
+                            <p>아직 생성된 분석 보고서가 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resizer -->
+            <div class="gutter" id="resizer"></div>
+
+            <!-- Right: Chat -->
+            <div class="panel chat-area" id="right_panel" style="width: 50%;">
+                <div class="panel-header">
+                    <span><i class="fa-solid fa-robot"></i> AI Assistant</span>
+                    <span style="font-size:0.75rem; color:#22c55e;"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Online</span>
+                </div>
+                <div class="chat-history">
+                    <!-- AI Msg -->
+                    <div class="message ai initial-load">
+                        <div class="msg-bubble">
+                            안녕하세요! 보고서 분석을 도와드릴 <strong>KIWI AI</strong>입니다.<br>
+                            궁금하신 부분이 있다면 질문해주세요!
+                        </div>
+                        <!-- 여기에 ID를 부여해서 자바스크립트가 찾을 수 있게 함 -->
+                        <div class="msg-meta" id="ai_init_time">KIWI AI • Loading...</div>
+                    </div>
+                </div>
+                <div class="chat-input-box">
+                    <div class="input-wrapper">
+                        <textarea placeholder="보고서 내용에 대해 물어보세요..."></textarea>
+                        <button class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 로그아웃 확인 모달 -->
+    <div class="logout-modal" id="logout_modal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-header">
+                <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+            </div>
+            <div class="logout-modal-body">
+                정말 로그아웃 하시겠습니까?
+            </div>
+            <div class="logout-modal-actions">
+                <button class="logout-modal-btn cancel" onclick="closeLogoutModal()">취소</button>
+                <button class="logout-modal-btn confirm" onclick="confirmLogout()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="toast-message" id="toast_message">로그아웃 되었습니다</div>
+    </div>
+
+    <!-- 전체화면 모달 추가 -->
+    <div class="fullscreen-modal" id="fullscreen_modal">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title" id="fullscreen_title">보고서</div>
+            <button class="fullscreen-close" onclick="closeFullscreen()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="fullscreen-content" id="fullscreen_content">
+            <!-- 보고서 내용이 여기에 복사됨 -->
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. Theme Toggle Logic (Dark Mode) --- */
+        const theme_btn = document.getElementById('theme_toggle');
+        const theme_icon = theme_btn.querySelector('i');
+        const body = document.body;
+        const brand_logo = document.getElementById('brand_logo');
+        
+        /* 로고 URL */
+        const STATIC_BASE_URL = "{% static '' %}";
+        const KIWI_STATIC_URL = STATIC_BASE_URL + "images/kiwi/";
+
+        // Check Local Storage
+        const saved_theme = localStorage.getItem('theme');
+        if (saved_theme === 'dark') {
+            body.classList.add('dark-mode');
+            theme_icon.classList.replace('fa-moon', 'fa-sun');
+            brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+        }
+
+        theme_btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+
+            // Toggle Icon & Save Preference
+            if (body.classList.contains('dark-mode')) {
+                theme_icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+                brand_logo.src = KIWI_STATIC_URL + 'B_KIWI.png';
+            } else {
+                theme_icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+                brand_logo.src = KIWI_STATIC_URL + 'W_KIWI.png';
+            }
+        });
+
+        /* --- 2. Resizing Logic --- */
+        const resizer = document.getElementById('resizer');
+        const left_panel = document.getElementById('left_panel');
+        const right_panel = document.getElementById('right_panel');
+        const main_pane = document.getElementById('main_pane');
+        let is_resizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            is_resizing = true;
+            document.body.style.cursor = 'col-resize';
+            resizer.classList.add('dragging');
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!is_resizing) return;
+            // Desktop check
+            if (window.innerWidth <= 768) return; 
+
+            const container_width = main_pane.getBoundingClientRect().width;
+            // Sidebar width adjustment needed if accurate calc is required
+            // Simple approach: calculate based on movement
+            const sidebar_width = document.getElementById('sidebar').offsetWidth;
+            const x = e.clientX - sidebar_width; // Adjust for sidebar
+            
+            const new_left_width = (x / container_width) * 100;
+            
+            if (new_left_width > 20 && new_left_width < 80) {
+                left_panel.style.width = `${new_left_width}%`;
+                right_panel.style.width = `${100 - new_left_width}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (is_resizing) {
+                is_resizing = false;
+                document.body.style.cursor = 'default';
+                resizer.classList.remove('dragging');
+                document.body.style.userSelect = 'auto';
+            }
+        });
+
+        /* --- 3. Sidebar Logic --- */
+        const sidebar = document.getElementById('sidebar');
+        const collapse_btn = document.getElementById('sidebar_collapse_btn');
+        const mobile_btn = document.getElementById('mobile_menu_btn');
+
+        // Desktop Collapse
+        collapse_btn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // Mobile Toggle (Simple implementation)
+        if(window.innerWidth <= 768) {
+             mobile_btn.style.display = 'block';
+             mobile_btn.addEventListener('click', () => {
+                 sidebar.classList.toggle('active');
+             });
+             // Close sidebar when clicking main content
+             main_pane.addEventListener('click', () => {
+                 sidebar.classList.remove('active');
+             });
+        }
+
+        // Accordion
+        document.querySelectorAll('.accordion-header').forEach(acc => {
+            acc.addEventListener('click', function() {
+                this.nextElementSibling.classList.toggle('active');
+            });
+        });
+
+        // 전체 접기 버튼
+        document.getElementById('collapse_all_btn').addEventListener('click', () => {
+            document.querySelectorAll('.accordion-content').forEach(content => {
+                content.classList.remove('active');
+            });
+        });
+
+        // 보고서 선택 이벤트 (기존 코드 수정)
+        document.querySelectorAll('.report-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.report-item').forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                const reportId = this.getAttribute('data-report-id');
+                
+                // ★ 현재 클릭한 사이드바 아이템의 저장 상태 확인 (fa-solid 클래스 여부)
+                const isCurrentlySaved = this.querySelector('.save-icon-sidebar').classList.contains('fa-solid');
+                
+                fetch(`/main/report/${reportId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        document.querySelector('.fake-doc').innerHTML = data.content;
+                        document.getElementById('report-title').innerHTML = 
+                            `<i class="fa-regular fa-file-pdf"></i> ${data.app_name} - ${data.version}`;
+                        
+                        // 다운로드 버튼 ID 업데이트
+                        const downloadBtn = document.getElementById('download_btn');
+                        if(downloadBtn) {
+                            downloadBtn.setAttribute('data-report-id', reportId);
+                        }
+
+                        // ★ 헤더 저장 버튼 ID 및 상태 업데이트
+                        const headerSaveBtn = document.getElementById('header_save_btn');
+                        if(headerSaveBtn) {
+                            headerSaveBtn.setAttribute('data-report-id', reportId);
+                            if(isCurrentlySaved) {
+                                headerSaveBtn.classList.remove('fa-regular');
+                                headerSaveBtn.classList.add('fa-solid');
+                            } else {
+                                headerSaveBtn.classList.remove('fa-solid');
+                                headerSaveBtn.classList.add('fa-regular');
+                            }
+                        }
+                    } else {
+                        showToast('보고서를 불러올 수 없습니다');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('오류가 발생했습니다');
+                });
+            });
+        });
+
+        // 로그아웃 모달 열기
+        function logout() {
+            document.getElementById('logout_modal').classList.add('active');
+        }
+
+        // 로그아웃 모달 닫기
+        function closeLogoutModal() {
+            document.getElementById('logout_modal').classList.remove('active');
+        }
+
+        // 로그아웃 확인
+        function confirmLogout() {
+            closeLogoutModal();
+            
+            fetch('/logout/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showToast('로그아웃 되었습니다');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 500);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // 토스트 알림 표시
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast_message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 500);
+        }
+
+        // 전체화면 열기
+        document.getElementById('fullscreen_btn').addEventListener('click', () => {
+            const modal = document.getElementById('fullscreen_modal');
+            const content = document.getElementById('fullscreen_content');
+            const title = document.getElementById('fullscreen_title');
+            const reportContent = document.querySelector('.fake-doc').innerHTML;
+            const reportTitle = document.getElementById('report-title').textContent.trim();
+            
+            content.innerHTML = reportContent;
+            title.textContent = reportTitle;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
+        });
+        
+        // 전체화면 닫기
+        function closeFullscreen() {
+            const modal = document.getElementById('fullscreen_modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // ESC 키로 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('fullscreen_modal');
+                if (modal.classList.contains('active')) {
+                    closeFullscreen();
+                }
+            }
+        });
+
+        // 모달 배경 클릭시 닫기
+        document.getElementById('logout_modal').addEventListener('click', function(e) {
+            if(e.target === this) {
+                closeLogoutModal();
+            }
+        });
+    
+    // CSRF 토큰 가져오기 함수
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // PDF 다운로드 버튼 이벤트
+    const downloadBtn = document.getElementById('download_btn');
+    if(downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            const reportId = this.getAttribute('data-report-id');
+            
+            // 다운로드 시작 알림
+            showToast('PDF 다운로드 중...');
+            
+            // [수정됨] 현재 창 이동(window.location.href) 대신 새 창 열기(window.open) 사용
+            // '_blank' 파라미터가 새 탭/새 창을 의미합니다.
+            window.open(`/main/report/${reportId}/download/`, '_blank');
+        });
+    }
+
+    // 보고서 선택 시 다운로드 버튼 업데이트 (기존 코드 수정)
+    document.querySelectorAll('.report-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.report-item').forEach(r => r.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            const reportId = this.getAttribute('data-report-id');
+            
+            fetch(`/main/report/${reportId}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    document.querySelector('.fake-doc').innerHTML = data.content;
+                    document.getElementById('report-title').innerHTML = 
+                        `<i class="fa-regular fa-file-pdf"></i> ${data.app_name} - ${data.version}`;
+                    
+                    // 다운로드 버튼 업데이트 ⭐
+                    const downloadBtn = document.getElementById('download_btn');
+                    if(downloadBtn) {
+                        downloadBtn.setAttribute('data-report-id', reportId);
+                    }
+                } else {
+                    showToast('보고서를 불러올 수 없습니다');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('오류가 발생했습니다');
+            });
+        });
+    });
+
+    /* --- Chat Interface Logic (Real Connection) --- */
+    const chatInput = document.querySelector('.chat-input-box textarea');
+    const sendBtn = document.querySelector('.send-btn');
+    const chatHistory = document.querySelector('.chat-history');
+
+    // 1. 메시지 추가 함수
+    function addMessage(text, type) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type} new-message`;
+        
+        // 현재 시간 포맷팅
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const sender = type === 'user' ? 'User' : 'KIWI AI';
+
+        // Markdown을 HTML로 변환
+        const formattedText = type === 'ai' ? marked.parse(text) : text.replace(/\n/g, '<br>');
+
+        msgDiv.innerHTML = `
+            <div class="msg-bubble">${formattedText}</div>
+            <div class="msg-meta">${sender} • ${timeString}</div>
+        `;
+        
+        chatHistory.appendChild(msgDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // 스크롤 맨 아래로
+    }
+
+    // 2. 로딩 표시(Thinking...) 함수
+    let loadingDiv = null;
+    function showLoading() {
+        loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message ai';
+        loadingDiv.innerHTML = `
+            <div class="msg-bubble">
+                <i class="fa-solid fa-spinner fa-spin"></i> 분석 중입니다...
+            </div>
+        `;
+        chatHistory.appendChild(loadingDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function removeLoading() {
+        if (loadingDiv) {
+            loadingDiv.remove();
+            loadingDiv = null;
+        }
+    }
+
+    // 3. 메시지 전송 및 API 통신 함수 (스트리밍 적용됨)
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // 1. 전송 시작 시 잠금
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        chatInput.placeholder = "AI가 답변을 생성 중입니다...";
+
+        // 사용자 메시지 화면에 표시
+        addMessage(message, 'user');
+        chatInput.value = ''; 
+
+        // 로딩 표시 (잠깐 떴다가 데이터 들어오면 사라짐)
+        showLoading();
+
+        try {
+            // Django 서버로 전송
+            const response = await fetch('/main/api/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ 'message': message })
+            });
+
+            // 로딩 제거 (응답 시작됨)
+            removeLoading();
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            // --- [핵심 변경] 스트리밍 처리 시작 ---
+            
+            // 1. AI 메시지 말풍선 미리 생성 (빈 상태)
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ai new-message';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            msgDiv.innerHTML = `
+                <div class="msg-bubble"></div>
+                <div class="msg-meta">KIWI AI • ${timeString}</div>
+            `;
+            chatHistory.appendChild(msgDiv);
+            
+            const bubbleContent = msgDiv.querySelector('.msg-bubble');
+            
+            // 2. Reader & Decoder 설정
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let fullText = "";
+
+            // 3. 스트림 읽기 루프
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                // 조각 데이터(Chunk) 디코딩 및 누적
+                const chunk = decoder.decode(value, { stream: true });
+                fullText += chunk;
+
+                // 4. 실시간 화면 업데이트 (Markdown 파싱 적용)
+                // 내용이 올 때마다 marked로 변환하여 넣습니다.
+                bubbleContent.innerHTML = marked.parse(fullText);
+                
+                // 스크롤 맨 아래로 유지
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+            
+            // --- 스트리밍 처리 끝 ---
+
+        } catch (error) {
+            removeLoading(); // 에러 발생 시 로딩 제거
+            console.error('Error:', error);
+            addMessage("서버 통신 중 오류가 발생했습니다.", 'ai');
+        } finally {
+            // 2. 잠금 해제
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.placeholder = "보고서 내용에 대해 물어보세요...";
+            chatInput.focus();
+        }
+    }
+
+    // 이벤트 리스너 등록
+    sendBtn.addEventListener('click', sendMessage);
+    
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { // Shift+Enter는 줄바꿈 허용
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    /* --- 초기 환영 메시지 시간 설정 --- */
+    document.addEventListener("DOMContentLoaded", function() {
+        const now = new Date();
+        // 현재 브라우저 설정에 맞춰 시간 포맷 (예: 오후 02:00)
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        const initTimeElement = document.getElementById('ai_init_time');
+        if (initTimeElement) {
+            initTimeElement.innerText = `KIWI AI • ${timeString}`;
+        }
+    });
+
+    /* --- Report Save Logic --- */
+    const headerSaveBtn = document.getElementById('header_save_btn');
+
+    // 저장 토글 API 호출 함수
+    function toggleReportSave(reportId) {
+        fetch(`/main/api/report/${reportId}/toggle-save/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                showToast(data.message);
+                updateSaveIcons(reportId, data.is_saved);
+            } else {
+                showToast('저장 처리에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('서버 오류가 발생했습니다.');
+        });
+    }
+
+    // 사이드바와 헤더의 아이콘 상태를 동기화하는 함수
+    function updateSaveIcons(reportId, isSaved) {
+        // 1. 헤더 버튼 업데이트 (현재 보고있는 보고서가 맞다면)
+        if (headerSaveBtn && headerSaveBtn.getAttribute('data-report-id') == reportId) {
+            if (isSaved) {
+                headerSaveBtn.classList.remove('fa-regular');
+                headerSaveBtn.classList.add('fa-solid');
+            } else {
+                headerSaveBtn.classList.remove('fa-solid');
+                headerSaveBtn.classList.add('fa-regular');
+            }
+        }
+
+        // 2. 사이드바 버튼 업데이트
+        const sidebarIcon = document.querySelector(`.save-icon-sidebar[data-report-id="${reportId}"]`);
+        if (sidebarIcon) {
+            if (isSaved) {
+                sidebarIcon.classList.remove('fa-regular');
+                sidebarIcon.classList.add('fa-solid');
+            } else {
+                sidebarIcon.classList.remove('fa-solid');
+                sidebarIcon.classList.add('fa-regular');
+            }
+        }
+    }
+
+    // 헤더 저장 버튼 클릭 이벤트
+    if (headerSaveBtn) {
+        headerSaveBtn.addEventListener('click', function() {
+            const reportId = this.getAttribute('data-report-id');
+            toggleReportSave(reportId);
+        });
+    }
+
+    // 사이드바 저장 버튼 클릭 이벤트
+    document.querySelectorAll('.save-icon-sidebar').forEach(icon => {
+        icon.addEventListener('click', function(e) {
+            e.stopPropagation(); // li 태그의 클릭 이벤트(보고서 불러오기)가 실행되지 않도록 막음
+            const reportId = this.getAttribute('data-report-id');
+            toggleReportSave(reportId);
+        });
+    });
+    </script>
+</body>
+</html>

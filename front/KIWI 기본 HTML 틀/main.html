@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI Dashboard - Dark Mode Ready</title>
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- 1. CSS Variables & Theme Config --- */
+        :root {
+            /* Light Mode (Default) */
+            --bg-body: #f1f5f9;       /* Slate 100 */
+            --bg-header: #ffffff;
+            --bg-panel: #ffffff;
+            --bg-sidebar: #ffffff;    /* Sidebar Light Mode */
+            
+            --text-main: #334155;     /* Slate 700 */
+            --text-sub: #64748b;      /* Slate 500 */
+            --text-sidebar: #334155;  /* Sidebar text Light Mode */
+            --sidebar-border: rgba(226, 232, 240, 0.5);
+            
+            --border-color: #e2e8f0;  /* Slate 200 */
+            --primary-color: #3b82f6; /* Blue 500 */
+            --primary-hover: #2563eb;
+            
+            /* Chat Colors */
+            --chat-bg: #f8fafc;
+            --msg-ai-bg: #f1f5f9;
+            --msg-ai-text: #334155;
+            --msg-user-bg: #eff6ff;   /* Blue 50 */
+            --msg-user-text: #1e3a8a; /* Blue 900 */
+            --msg-user-border: #bfdbfe;
+
+            /* Document Viewer */
+            --doc-bg: #ffffff;
+            --doc-text: #1e293b;
+            --doc-shadow: rgba(0,0,0,0.1);
+
+            --gutter-color: #e2e8f0;
+            --gutter-hover: #3b82f6;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            --bg-body: #020617;       /* Slate 950 (Very Dark) */
+            --bg-header: #0f172a;     /* Slate 900 */
+            --bg-panel: #1e293b;      /* Slate 800 */
+            --bg-sidebar: #1e293b;    /* Sidebar Dark Mode */
+            
+            --text-main: #e2e8f0;     /* Slate 200 */
+            --text-sub: #94a3b8;      /* Slate 400 */
+            --text-sidebar: #cbd5e1;  /* Sidebar text Dark Mode */
+            --sidebar-border: rgba(255, 255, 255, 0.1);
+            
+            --border-color: #334155;  /* Slate 700 */
+            
+            /* Chat Colors Dark */
+            --chat-bg: #1e293b;
+            --msg-ai-bg: #334155;
+            --msg-ai-text: #f1f5f9;
+            --msg-user-bg: #1d4ed8;   /* Blue 700 */
+            --msg-user-text: #ffffff;
+            --msg-user-border: #1e40af;
+
+            /* Document Viewer Dark */
+            --doc-bg: #0f172a;        /* 어두운 종이 느낌 */
+            --doc-text: #cbd5e1;
+            --doc-shadow: rgba(0,0,0,0.5);
+
+            --gutter-color: #475569;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* 모든 테마 관련 요소에 동일한 transition 적용 */
+        body, header, .sidebar, .sidebar-header, .panel, .panel-header, 
+        .report-body, .fake-doc, .msg-bubble, .accordion-content, 
+        .report-item, textarea, .gutter, .accordion-header {
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+        }
+
+        /* --- Header --- */
+        header {
+            height: 60px;
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        header a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand {
+            font-weight: 700; font-size: 1.6rem; display: flex; align-items: center; gap: 0px;
+            color: var(--text-main);
+        }
+        .brand span { color: var(--primary-color); }
+        .brand-logo { width: 75px; height: 35px; object-fit: contain; transition: opacity 0.3s; }
+
+        .header-actions {
+            display: flex; align-items: center; gap: 15px;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { background-color: var(--border-color); }
+
+        /* --- Layout --- */
+        .container { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-sidebar);
+            display: flex; flex-direction: column; flex-shrink: 0;
+            transition: width 0.3s ease;
+            border-right: 1px solid var(--border-color);
+        }
+        .sidebar.collapsed { width: 60px; }
+
+        .sidebar-header {
+            padding: 20px; border-bottom: 1px solid var(--sidebar-border);
+            display: flex; justify-content: space-between; align-items: center;
+            height: 60px;
+        }
+        .sidebar-toggle-btn { background: none; border: none; color: inherit; cursor: pointer; font-size: 1.1rem; }
+
+        .version-list { list-style: none; overflow-y: auto; flex: 1; }
+        .accordion-header {
+            padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between;
+            font-size: 0.9rem; font-weight: 500;
+        }
+        .accordion-header:hover { background-color: var(--border-color); }
+        
+        .accordion-content {
+            background-color: var(--bg-body); max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+        }
+        .accordion-content.active { max-height: 500px; }
+
+        .report-item {
+            padding: 10px 20px 10px 30px; cursor: pointer; font-size: 0.85rem; color: var(--text-sub);
+            border-left: 3px solid transparent;
+        }
+        .report-item:hover { color: var(--text-main); background-color: var(--border-color); }
+        .report-item.selected {
+            border-left-color: var(--primary-color); color: var(--text-main); background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Sidebar Collapsed State */
+        .sidebar.collapsed .sidebar-header span,
+        .sidebar.collapsed .accordion-header span,
+        .sidebar.collapsed .accordion-header i,
+        .sidebar.collapsed .accordion-content { display: none; }
+        .sidebar.collapsed .sidebar-header { justify-content: center; }
+
+        /* --- Main Pane (Split View) --- */
+        .main-pane { display: flex; flex: 1; width: 100%; position: relative; }
+
+        .panel {
+            background-color: var(--bg-panel);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--bg-panel); color: var(--text-main);
+        }
+
+        /* --- Report Viewer Area --- */
+        .report-body {
+            flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-body);
+            display: flex; justify-content: center;
+        }
+        .fake-doc {
+            width: 100%; max-width: 800px; min-height: 1000px;
+            background-color: var(--doc-bg); color: var(--doc-text);
+            padding: 50px;
+            box-shadow: 0 4px 15px var(--doc-shadow);
+        }
+        .fake-doc h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; }
+        .fake-doc p { line-height: 1.8; margin-bottom: 15px; }
+
+        /* --- Chat Interface --- */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-panel); }
+        
+        .chat-history {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .message { display: flex; flex-direction: column; max-width: 85%; }
+        .message.ai { align-self: flex-start; }
+        .message.user { align-self: flex-end; align-items: flex-end; }
+
+        .msg-bubble {
+            padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .message.ai .msg-bubble {
+            background-color: var(--msg-ai-bg);
+            color: var(--msg-ai-text);
+            border: 1px solid var(--border-color);
+            border-top-left-radius: 2px;
+        }
+
+        .message.user .msg-bubble {
+            background-color: var(--msg-user-bg);
+            color: var(--msg-user-text);
+            border: 1px solid var(--msg-user-border);
+            border-top-right-radius: 2px;
+        }
+
+        .msg-meta { font-size: 0.75rem; color: var(--text-sub); margin-top: 5px; }
+        
+        .citation {
+            display: inline-block; font-size: 0.75rem; font-weight: bold;
+            background-color: rgba(59, 130, 246, 0.15); color: var(--primary-color);
+            padding: 2px 6px; border-radius: 4px; cursor: pointer; margin-right: 4px;
+        }
+
+        .chat-input-box {
+            padding: 20px; border-top: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+        }
+        .input-wrapper { display: flex; gap: 10px; position: relative; }
+        
+        textarea {
+            flex: 1; padding: 12px 15px;
+            background-color: var(--bg-body); color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; resize: none; height: 50px; outline: none;
+            font-family: inherit;
+        }
+        textarea:focus { border-color: var(--primary-color); }
+
+        .send-btn {
+            width: 50px; height: 50px; background-color: var(--primary-color);
+            color: white; border: none; border-radius: 8px; cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .send-btn:hover { background-color: var(--primary-hover); }
+
+        /* --- Resizer (Gutter) --- */
+        .gutter {
+            width: 6px; background-color: var(--gutter-color);
+            cursor: col-resize; z-index: 10;
+        }
+        .gutter:hover, .gutter.dragging { background-color: var(--primary-color); }
+
+        /* --- Scrollbar Customization --- */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            .gutter { display: none; }
+            .main-pane { flex-direction: column; }
+            .panel { width: 100% !important; height: 50%; }
+            .sidebar { position: absolute; height: 100%; z-index: 50; transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .report-body { padding: 20px; }
+            .fake-doc { padding: 25px; min-height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="./index.html">
+            <div class="brand">
+                <!-- Mobile Menu Toggle (Visible on Mobile) -->
+                <button id="mobileMenuBtn" style="background:none; border:none; color:var(--text-main); font-size:1.2rem; margin-right:10px; cursor:pointer; display:none;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <img src="W_KIWI.png" alt="KIWI Logo" class="brand-logo" id="brand_logo">
+                <span>KIWI</span>
+            </div>
+        </a>
+        <div class="header-actions">
+            <!-- Theme Toggle Button -->
+            <button class="theme-btn" id="themeToggle" title="테마 변경">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <i class="fa-solid fa-circle-user" style="font-size: 1.5rem; color: var(--text-sub);"></i>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>Report Explorer</span>
+                <button class="sidebar-toggle-btn" id="sidebar_collapse_btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            <ul class="version-list">
+                <li class="accordion-item">
+                    <div class="accordion-header">
+                        <span>2024 재무 분석</span><i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <ul class="accordion-content active">
+                        <li class="report-item selected">Q4 종합 보고서 (v2.1)</li>
+                        <li class="report-item">Q4 초안 (v1.0)</li>
+                    </ul>
+                </li>
+                <li class="accordion-item">
+                    <div class="accordion-header">
+                        <span>경쟁사 동향</span><i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <ul class="accordion-content">
+                        <li class="report-item">Netflix vs Disney+</li>
+                        <li class="report-item">Tving 사용자 분석</li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-pane" id="main_pane">
+            
+            <!-- Left: Document Viewer -->
+            <div class="panel" id="left_panel" style="width: 50%;">
+                <div class="panel-header">
+                    <span><i class="fa-regular fa-file-pdf"></i> Q4 종합 보고서.pdf</span>
+                    <div style="font-size:0.8rem; color:var(--text-sub);">
+                        <i class="fa-solid fa-download" style="cursor:pointer; margin-right:10px;"></i>
+                        <i class="fa-solid fa-expand" style="cursor:pointer;"></i>
+                    </div>
+                </div>
+                <div class="report-body">
+                    <div class="fake-doc">
+                        <h2>1. Executive Summary</h2>
+                        <p><strong>2024년 4분기</strong>, 당사의 OTT 시장 점유율은 전년 대비 <strong>15% 성장</strong>하였습니다. 이는 오리지널 콘텐츠 'The Kingdom'의 성공적인 런칭에 기인합니다.</p>
+                        <p>특히 2030 세대의 유입이 두드러졌으며, 모바일 트래픽 비중이 78%를 기록했습니다.</p>
+                        <br>
+                        <h3>1.1 주요 재무 성과</h3>
+                        <p>영업이익은 450억 원을 기록하여 목표치를 110% 달성했습니다. 마케팅 비용 효율화(ROI 3.5%)가 주요 요인으로 분석됩니다.</p>
+                        <br>
+                        <div style="background:rgba(59,130,246,0.1); padding:15px; border-radius:8px; border-left:4px solid var(--primary-color);">
+                            <strong>AI Insight:</strong> 본 보고서의 핵심은 구독자 유지율(Retention)의 증가입니다. 이탈률(Churn Rate)이 2.1%로 역대 최저를 기록했습니다.
+                        </div>
+                        <br>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resizer -->
+            <div class="gutter" id="resizer"></div>
+
+            <!-- Right: Chat -->
+            <div class="panel chat-area" id="right_panel" style="width: 50%;">
+                <div class="panel-header">
+                    <span><i class="fa-solid fa-robot"></i> AI Assistant</span>
+                    <span style="font-size:0.75rem; color:#22c55e;"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Online</span>
+                </div>
+                <div class="chat-history">
+                    <!-- AI Msg -->
+                    <div class="message ai">
+                        <div class="msg-bubble">
+                            안녕하세요! Q4 보고서 분석을 도와드릴 AI입니다. <br>
+                            이탈률이 감소한 구체적인 원인이 궁금하시다면 질문해주세요.
+                        </div>
+                        <div class="msg-meta">AI Assistant • 10:00 AM</div>
+                    </div>
+                    <!-- User Msg -->
+                    <div class="message user">
+                        <div class="msg-bubble">
+                            이번 분기 영업이익 달성률이 어떻게 돼?
+                        </div>
+                        <div class="msg-meta">User • 10:05 AM</div>
+                    </div>
+                    <!-- AI Msg -->
+                    <div class="message ai">
+                        <div class="msg-bubble">
+                            보고서에 따르면, 영업이익은 450억 원으로 목표치 대비 <strong>110%</strong>를 달성했습니다. <span class="citation">[p.1 요약]</span><br><br>
+                            주요 원인은 마케팅 비용 효율화입니다.
+                        </div>
+                        <div class="msg-meta">AI Assistant • 10:05 AM</div>
+                    </div>
+                </div>
+                <div class="chat-input-box">
+                    <div class="input-wrapper">
+                        <textarea placeholder="보고서 내용에 대해 물어보세요..."></textarea>
+                        <button class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. Theme Toggle Logic (Dark Mode) --- */
+        const theme_btn = document.getElementById('theme_toggle');
+        const theme_icon = theme_btn.querySelector('i');
+        const body = document.body;
+        const brand_logo = document.getElementById('brand_logo');
+
+        // Check Local Storage
+        const saved_theme = localStorage.getItem('theme');
+        if (saved_theme === 'dark') {
+            body.classList.add('dark-mode');
+            theme_icon.classList.replace('fa-moon', 'fa-sun');
+            brand_logo.src = 'B_KIWI.png';
+        }
+
+        theme_btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+
+            // Toggle Icon & Save Preference
+            if (body.classList.contains('dark-mode')) {
+                theme_icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+                brand_logo.src = 'B_KIWI.png';
+            } else {
+                theme_icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+                brand_logo.src = 'W_KIWI.png';
+            }
+        });
+
+        /* --- 2. Resizing Logic --- */
+        const resizer = document.getElementById('resizer');
+        const left_panel = document.getElementById('left_panel');
+        const right_panel = document.getElementById('right_panel');
+        const main_pane = document.getElementById('main_pane');
+        let is_resizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            is_resizing = true;
+            document.body.style.cursor = 'col-resize';
+            resizer.classList.add('dragging');
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!is_resizing) return;
+            // Desktop check
+            if (window.innerWidth <= 768) return; 
+
+            const container_width = main_pane.getBoundingClientRect().width;
+            // Sidebar width adjustment needed if accurate calc is required
+            // Simple approach: calculate based on movement
+            const sidebar_width = document.getElementById('sidebar').offsetWidth;
+            const x = e.clientX - sidebar_width; // Adjust for sidebar
+            
+            const new_left_width = (x / container_width) * 100;
+            
+            if (new_left_width > 20 && new_left_width < 80) {
+                left_panel.style.width = `${new_left_width}%`;
+                right_panel.style.width = `${100 - new_left_width}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (is_resizing) {
+                is_resizing = false;
+                document.body.style.cursor = 'default';
+                resizer.classList.remove('dragging');
+                document.body.style.userSelect = 'auto';
+            }
+        });
+
+        /* --- 3. Sidebar Logic --- */
+        const sidebar = document.getElementById('sidebar');
+        const collapse_btn = document.getElementById('sidebar_collapse_btn');
+        const mobile_btn = document.getElementById('mobile_menu_btn');
+
+        // Desktop Collapse
+        collapse_btn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // Mobile Toggle (Simple implementation)
+        if(window.innerWidth <= 768) {
+             mobile_btn.style.display = 'block';
+             mobile_btn.addEventListener('click', () => {
+                 sidebar.classList.toggle('active');
+             });
+             // Close sidebar when clicking main content
+             main_pane.addEventListener('click', () => {
+                 sidebar.classList.remove('active');
+             });
+        }
+
+        // Accordion
+        document.querySelectorAll('.accordion-header').forEach(acc => {
+            acc.addEventListener('click', function() {
+                this.nextElementSibling.classList.toggle('active');
+            });
+        });
+
+    </script>
+</body>
+</html>

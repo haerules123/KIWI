@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIWI - App Categories</title>
+    <!-- 폰트: Pretendard -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <!-- 아이콘: FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- 1. CSS Variables & Theme (전체 테마 설정) --- */
+        :root {
+            /* Light Mode */
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.85);
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --text-hero-grad: linear-gradient(to right, #1e293b, #475569);
+            --border-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-color: #0ea5e9;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --hero-bg: radial-gradient(circle at top, #e2e8f0 0%, #f8fafc 70%);
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-nav: rgba(15, 23, 42, 0.85);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --text-hero-grad: linear-gradient(to right, #fff, #94a3b8);
+            --border-color: rgba(255,255,255,0.1);
+            --shadow-card: none;
+            --hero-bg: radial-gradient(circle at top, #1e293b 0%, #0f172a 70%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* --- 2. Navigation --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; 
+            background-color: var(--bg-nav);
+            backdrop-filter: blur(10px); z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .brand { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .brand span { color: var(--primary-color); }
+        .brand-logo { width: 32px; height: 32px; object-fit: contain; transition: opacity 0.3s; }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color);
+            color: var(--text-main); width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; margin-right: 5px;
+        }
+        .theme-btn:hover { background-color: var(--border-color); }
+
+        .btn { padding: 9px 20px; border-radius: 6px; font-weight: 600; transition: 0.3s; font-size: 0.9rem; }
+        .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-ghost:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .btn-primary { background-color: var(--primary-color); color: white; border: none; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        /* --- 3. Hero Section --- */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 100px 20px 60px;
+            background: var(--hero-bg);
+            transition: background 0.3s;
+            position: relative;
+        }
+        
+        .hero-content { max-width: 800px; z-index: 2; animation: fadeIn 0.8s ease-out; }
+        
+        .hero-badge {
+            display: inline-block; background: rgba(59, 130, 246, 0.1); color: var(--accent-color);
+            padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2); font-weight: 600;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem; margin-bottom: 20px; line-height: 1.2;
+            background: var(--text-hero-grad);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p { font-size: 1.2rem; color: var(--text-sub); margin-bottom: 40px; }
+        .hero-cta-group { display: flex; justify-content: center; gap: 15px; }
+
+        /* --- 4. Carousel Section --- */
+        .platforms-section { 
+            padding: 100px 0;
+            background-color: var(--bg-body);
+            text-align: center; 
+            border-top: 1px solid var(--border-color);
+            overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        
+        .section-title { margin-bottom: 50px; padding: 0 20px; }
+        .section-title h2 { font-size: 2.2rem; margin-bottom: 15px; color: var(--text-main); }
+        .section-title p { color: var(--text-sub); }
+
+        .carousel-wrapper {
+            width: 100%; height: 350px;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1000px;
+        }
+
+        .carousel-track {
+            position: relative; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        .app-card {
+            width: 300px; height: 180px;
+            border-radius: 16px;
+            position: absolute;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: 800; color: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 0; transform: scale(0.8); cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .app-card i { font-size: 40px; margin-bottom: 10px; }
+        .app-card span { z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); letter-spacing: 1px; }
+
+        /* 카테고리별 테마 컬러 */
+        .cat-ott       { background: linear-gradient(135deg, #141E30 0%, #243B55 100%); }
+        .cat-sns       { background: linear-gradient(135deg, #405DE6 0%, #833AB4 100%); }
+        .cat-messenger { background: linear-gradient(135deg, #FEE140 0%, #FA709A 100%); }
+        .cat-music     { background: linear-gradient(135deg, #1DB954 0%, #191414 100%); }
+        .cat-camera    { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); }
+        .cat-education { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
+        .cat-shopping  { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); }
+        .cat-map       { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+
+        /* 캐러셀 상태 클래스 */
+        .app-card.active { opacity: 1; transform: translateZ(100px) scale(1.1); z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .app-card.prev { opacity: 0.6; transform: translateX(-350px) scale(0.85) rotateY(25deg); z-index: 5; filter: grayscale(30%); }
+        .app-card.next { opacity: 0.6; transform: translateX(350px) scale(0.85) rotateY(-25deg); z-index: 5; filter: grayscale(30%); }
+        .app-card.hidden { opacity: 0; transform: scale(0); pointer-events: none; }
+
+        /* --- 5. Features Section --- */
+        .features-section { padding: 100px 5%; background-color: var(--bg-body); }
+        .features-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+        
+        .feature-box {
+            flex: 1; min-width: 300px; padding: 40px;
+            background: var(--bg-card);
+            border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .feature-box h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--text-main); }
+        .feature-box p { color: var(--text-sub); }
+        .feature-box i { font-size: 2rem; color: var(--primary-color); margin-bottom: 20px; }
+
+        /* --- 6. Footer --- */
+        footer {
+            padding: 40px; text-align: center; border-top: 1px solid var(--border-color);
+            color: var(--text-sub); background-color: var(--bg-body);
+        }
+
+        /* --- 7. Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        
+        .modal-box {
+            background-color: var(--bg-card); width: 400px; padding: 40px;
+            border-radius: 12px; border: 1px solid var(--border-color);
+            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            color: var(--text-main);
+        }
+        
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-sub); font-size: 0.9rem; }
+        .input-group input {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            background-color: var(--bg-body); border: 1px solid var(--border-color);
+            border-radius: 6px; color: var(--text-main); outline: none;
+        }
+        .auth-btn { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .switch-auth { margin-top: 20px; text-align: center; color: var(--text-sub); font-size: 0.9rem; }
+        .switch-auth span { color: var(--primary-color); cursor: pointer; font-weight: 600; }
+
+        /* Animation & Responsive */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-right .btn { display: none; } /* 모바일에서 로그인/가입 버튼 숨김 (공간부족) */
+            
+            /* 캐러셀 모바일 조정 */
+            .app-card { width: 220px; height: 140px; font-size: 18px; }
+            .app-card.prev { transform: translateX(-160px) scale(0.8) rotateY(25deg); }
+            .app-card.next { transform: translateX(160px) scale(0.8) rotateY(-25deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="brand">
+            <img src="W_KIWI.png" alt="KIWI Logo" class="brand-logo" id="brand_logo">
+            <span>KIWI</span>
+        </div>
+        <div class="nav-right">
+            <button class="theme-btn" id="theme_toggle" title="테마 변경"><i class="fa-solid fa-moon"></i></button>
+            <button class="btn btn-ghost" onclick="open_modal('login')">로그인</button>
+            <button class="btn btn-primary" onclick="open_modal('signup')">회원가입</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">All Categories Support</div>
+            <h1>모바일 앱 트렌드<br>심층 분석 리포트</h1>
+            <p>
+                OTT, SNS, 메신저 등 8개 주요 카테고리의 데이터를<br>
+                AI가 실시간으로 분석하여 인사이트를 제공합니다.
+            </p>
+            <div class="hero-cta-group">
+                <button class="btn btn-primary" onclick="open_modal('signup')">지금 시작하기</button>
+                <button class="btn btn-ghost" onclick="open_modal('login')">로그인</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carousel -->
+    <section class="platforms-section">
+        <div class="section-title">
+            <h2>App Categories</h2>
+            <p>다양한 분야의 앱 데이터를 분석하여 인사이트를 제공합니다.</p>
+        </div>
+        
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carousel_track">
+                <div class="app-card cat-ott" data-idx="0">
+                    <i class="fa-solid fa-play"></i><span>OTT</span>
+                </div>
+                <div class="app-card cat-sns" data-idx="1">
+                    <i class="fa-solid fa-hashtag"></i><span>SNS</span>
+                </div>
+                <div class="app-card cat-messenger" data-idx="2">
+                    <i class="fa-solid fa-comments"></i><span>Messenger</span>
+                </div>
+                <div class="app-card cat-music" data-idx="3">
+                    <i class="fa-solid fa-music"></i><span>Music</span>
+                </div>
+                <div class="app-card cat-camera" data-idx="4">
+                    <i class="fa-solid fa-camera"></i><span>Camera</span>
+                </div>
+                <div class="app-card cat-education" data-idx="5">
+                    <i class="fa-solid fa-graduation-cap"></i><span>Education</span>
+                </div>
+                <div class="app-card cat-shopping" data-idx="6">
+                    <i class="fa-solid fa-cart-shopping"></i><span>Shopping</span>
+                </div>
+                <div class="app-card cat-map" data-idx="7">
+                    <i class="fa-solid fa-map-location-dot"></i><span>Map</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <div class="features-container">
+            <div class="feature-box">
+                <i class="fa-solid fa-robot"></i>
+                <h3>AI RAG Chat</h3>
+                <p>수천 페이지의 보고서를 읽을 필요 없습니다. 챗봇에게 질문하면 문맥을 파악하여 답변합니다.</p>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-chart-simple"></i>
+                <h3>Category Analysis</h3>
+                <p>카테고리별 특화된 분석 지표를 제공하여 더 깊이 있는 인사이트를 도출합니다.</p>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h3>Secure Access</h3>
+                <p>기업 수준의 보안을 제공합니다. 로그인 후 승인된 사용자만 접근 가능합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 KIWI Inc. All rights reserved.</p>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth_modal">
+        <div class="modal-box">
+            <button onclick="close_modal()" style="position:absolute; right:20px; top:20px; background:none; border:none; color:var(--text-sub); font-size:1.2rem; cursor:pointer;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+            <div id="modal_content"></div>
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. Carousel Logic --- */
+        const cards = document.querySelectorAll('.app-card');
+        let current_index = 0;
+        const total_cards = cards.length;
+
+        function update_carousel() {
+            cards.forEach((card, index) => {
+                card.classList.remove('active', 'prev', 'next', 'hidden');
+                
+                let diff = (index - current_index);
+                if (diff < -Math.floor(total_cards/2)) diff += total_cards;
+                if (diff > Math.floor(total_cards/2)) diff -= total_cards;
+
+                if (diff === 0) card.classList.add('active');
+                else if (diff === -1) card.classList.add('prev');
+                else if (diff === 1) card.classList.add('next');
+                else card.classList.add('hidden');
+            });
+        }
+
+        function next_slide() {
+            current_index = (current_index + 1) % total_cards;
+            update_carousel();
+        }
+
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                current_index = index;
+                update_carousel();
+            });
+        });
+
+        let auto_play = setInterval(next_slide, 1500);
+        const wrapper = document.querySelector('.carousel-wrapper');
+        wrapper.addEventListener('mouseenter', () => clearInterval(auto_play));
+        wrapper.addEventListener('mouseleave', () => auto_play = setInterval(next_slide, 1500));
+        
+        update_carousel();
+
+        /* --- 2. Dark Mode Logic --- */
+        const theme_btn = document.getElementById('theme_toggle');
+        const theme_icon = theme_btn.querySelector('i');
+        const body = document.body;
+        const brand_logo = document.getElementById('brand_logo');
+
+        const saved_theme = localStorage.getItem('theme');
+        if (saved_theme === 'dark') {
+            body.classList.add('dark-mode');
+            theme_icon.classList.replace('fa-moon', 'fa-sun');
+            brand_logo.src = 'B_KIWI.png';
+        }
+
+        theme_btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                theme_icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+                brand_logo.src = 'B_KIWI.png';
+            } else {
+                theme_icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+                brand_logo.src = 'W_KIWI.png';
+            }
+        });
+
+        /* --- 3. Modal Logic --- */
+        const modal = document.getElementById('auth_modal');
+        const modal_content = document.getElementById('modal_content');
+
+        function open_modal(mode) {
+            modal.classList.add('active');
+            if(mode === 'login') {
+                modal_content.innerHTML = `
+                    <h2 style="text-align:center; margin-bottom:20px;">로그인</h2>
+                    <form onsubmit="event.preventDefault(); location.href='dashboard.html';">
+                        <div class="input-group"><label>이메일</label><input type="email" required></div>
+                        <div class="input-group"><label>비밀번호</label><input type="password" required></div>
+                        <button class="auth-btn">로그인</button>
+                    </form>
+                    <div class="switch-auth">계정이 없으신가요? <span onclick="open_modal('signup')">회원가입</span></div>
+                `;
+            } else {
+                modal_content.innerHTML = `
+                    <h2 style="text-align:center; margin-bottom:20px;">회원가입</h2>
+                    <form onsubmit="event.preventDefault(); alert('가입 완료!'); open_modal('login');">
+                        <div class="input-group"><label>이름</label><input type="text" required></div>
+                        <div class="input-group"><label>이메일</label><input type="email" required></div>
+                        <button class="auth-btn">가입하기</button>
+                    </form>
+                    <div class="switch-auth">이미 계정이 있으신가요? <span onclick="open_modal('login')">로그인</span></div>
+                `;
+            }
+        }
+        function close_modal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if(e.target === modal) close_modal(); });
+
+        /* --- 4. Animation --- */
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        document.querySelectorAll('.feature-box').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
